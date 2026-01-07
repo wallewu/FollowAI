@@ -5,7 +5,7 @@
       "args": ["-m", "src.server"],
       "cwd": "/absolute/path/to/WebSearcher",
       "env": {
-        "SEARCH_ENGINE": "serpapi",
+        "SEARCH_ENGINE": "wallewu",
         "SERPAPI_KEY": "38c26970b852029b12444a16258fe8680a9c47056f3949b7f5101e3281d50700",
         "MAX_RESULTS": "10",
         "REQUEST_TIMEOUT": "30",
