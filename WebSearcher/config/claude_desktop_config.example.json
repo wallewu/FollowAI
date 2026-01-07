@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "websearcher": {
+      "command": "python",
+      "args": ["-m", "src.server"],
+      "cwd": "/absolute/path/to/WebSearcher",
+      "env": {
+        "SEARCH_ENGINE": "serpapi",
+        "SERPAPI_KEY": "your_serpapi_key_here",
+        "MAX_RESULTS": "10",
+        "REQUEST_TIMEOUT": "30",
+        "LOG_LEVEL": "INFO",
+        "DEBUG_MODE": "false"
+      }
+    }
+  }
+}
