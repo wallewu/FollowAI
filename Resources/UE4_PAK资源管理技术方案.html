@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UE4游戏平台基于COS的PAK资源管理技术方案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            font-size: 2em;
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            font-size: 1.5em;
+            color: #764ba2;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+        
+        h5 {
+            font-size: 1.1em;
+            color: #764ba2;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        h6 {
+            font-size: 1em;
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffecb3 100%);
+            border-left: 4px solid #ff6b35;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        /* Success Box */
+        .success-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid #2e7d32;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #e8eaf6;
+            transition: all 0.3s ease;
+        }
+        
+        /* Code Blocks */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        pre code {
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre;
+            display: block;
+        }
+        
+        /* Inline Code */
+        code {
+            background: #f4f4f4;
+            color: #e83e8c;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background: transparent;
+            color: #f8f8f2;
+            padding: 0;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+            color: #333;
+        }
+        
+        ul li::marker {
+            color: #667eea;
+        }
+        
+        ol li::marker {
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        /* Links */
+        a {
+            color: #667eea;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        /* Horizontal Rule */
+        hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 30px 0;
+        }
+        
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Strong and Emphasis */
+        strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        em {
+            color: #764ba2;
+            font-style: italic;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 1.6em;
+            }
+            
+            h3 {
+                font-size: 1.3em;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UE4游戏平台基于COS的PAK资源管理技术方案</h1>
+            <div class="subtitle">v1.0 技术架构文档</div>
+        </div>
+        <div class="content">
+<h1>UE4游戏平台基于COS的PAK资源管理技术方案</h1>
+
+<p><strong>文档版本</strong>: v1.0  </p>
+<p><strong>最后更新</strong>: 2026-01-10  </p>
+<p><strong>架构师</strong>: AI技术架构师  </p>
+<p><strong>项目背景</strong>: UE4游戏平台，支持多MOD，资源粒度为PAK文件</p>
+
+<hr>
+
+<h2>一、方案概述</h2>
+
+<h3>1.1 核心目标</h3>
+<ul>
+<li>支持5000+（未来更多）PAK文件的高效管理</li>
+<li>支持多MOD独立更新，每个MOD包含数量不等的PAK文件（几十到几百个）</li>
+<li>支持多平台资源管理（iOS/Android/PC/Harmony/H5）</li>
+<li>支持三环境隔离（正式环境、测试环境、先遣验证环境）</li>
+<li>支持APP底包版本管理（2个月一次大版本）</li>
+<li>基于MD5避免重复上传，节省带宽和存储成本</li>
+<li>支持差分包生成，优化用户下载体验</li>
+<li>支持资源回滚和历史版本管理</li>
+<li>支持自动化资源清理，控制存储成本</li>
+<li>管理端全链路支持</li>
+</ul>
+<h3>1.2 技术栈选型</h3>
+<ul>
+<li><strong>存储</strong>: 腾讯云COS + CDN加速</li>
+<li><strong>差分算法</strong>: HDiffPatch（已有工具）</li>
+<li><strong>管理端</strong>: 建议采用 Go/Python + MySQL + Redis</li>
+<li><strong>客户端</strong>: UE4.26 + Pak加载机制</li>
+</ul>
+<hr>
+
+<h2>二、COS目录结构设计</h2>
+
+<h3>2.1 设计原则</h3>
+<ol>
+<li><strong>内容寻址</strong>: 基于MD5组织文件，避免重复上传</li>
+<li><strong>环境隔离</strong>: 不同环境使用独立的Bucket或目录前缀</li>
+<li><strong>版本复用</strong>: 相同MD5的PAK在不同版本间可复用</li>
+<li><strong>MOD独立</strong>: 支持MOD级别的独立更新和回滚</li>
+</ol>
+<h3>2.2 目录结构方案</h3>
+
+<pre><code class="language-">
+cos://game-resources-{env}/
+├── pool/                          # 资源池（内容寻址，基于MD5）
+│   ├── pak/                       # PAK文件池
+│   │   ├── ios/                   # iOS平台
+│   │   │   ├── ab/                # MD5前2位分片
+│   │   │   │   └── abcdef123456...pak
+│   │   │   ├── cd/
+│   │   │   └── ...（共256个目录）
+│   │   ├── android/               # Android平台
+│   │   │   ├── ab/
+│   │   │   └── ...
+│   │   ├── pc/                    # PC平台
+│   │   │   ├── ab/
+│   │   │   └── ...
+│   │   ├── harmony/               # Harmony平台
+│   │   │   ├── ab/
+│   │   │   └── ...
+│   │   └── h5/                    # H5平台
+│   │       ├── ab/
+│   │       └── ...
+│   │
+│   └── patch/                     # 差分包池
+│       ├── ios/                   # iOS平台差分包
+│       │   ├── 12/
+│       │   │   └── 123456_to_789abc.hdiff
+│       │   └── ...
+│       ├── android/               # Android平台差分包
+│       │   ├── 12/
+│       │   └── ...
+│       ├── pc/                    # PC平台差分包
+│       │   ├── 12/
+│       │   └── ...
+│       ├── harmony/               # Harmony平台差分包
+│       │   ├── 12/
+│       │   └── ...
+│       └── h5/                    # H5平台差分包
+│           ├── 12/
+│           └── ...
+│
+├── manifests/                     # Manifest清单目录（平台优先结构）
+│   ├── ios/                       # iOS平台
+│   │   ├── base/                  # Base资源Manifest
+│   │   │   ├── 1.0.0.1_20260110.json
+│   │   │   ├── 1.0.0.2_20260115.json
+│   │   │   └── 1.0.0.3_latest.json
+│   │   └── mod/                   # MOD资源Manifest
+│   │       ├── mod_a/
+│   │       │   ├── 1.0.0.1_20260110.json
+│   │       │   └── 1.0.0.2_latest.json
+│   │       └── mod_b/
+│   │           └── 1.0.0.1_latest.json
+│   ├── android/                   # Android平台
+│   │   ├── base/
+│   │   └── mod/
+│   ├── pc/                        # PC平台
+│   │   ├── base/
+│   │   └── mod/
+│   ├── harmony/                   # Harmony平台
+│   │   ├── base/
+│   │   └── mod/
+│   └── h5/                        # H5平台
+│       ├── base/
+│       └── mod/
+│
+├── metadata/                      # 元数据目录
+│   └── platform_config.json       # 平台配置信息
+│
+└── archives/                      # 归档目录（用于回滚）
+    ├── 2026/
+    │   ├── 01/
+    │   │   └── snapshot_20260110.tar.gz
+    │   └── ...
+    └── ...
+</code></pre>
+
+<h3>2.3 环境隔离策略</h3>
+
+<p><strong>采用方案：使用不同Bucket（物理隔离）</strong></p>
+
+<pre><code class="language-">
+cos://game-resources-prod/      # 正式环境
+cos://game-resources-test/      # 测试环境
+cos://game-resources-preview/   # 先遣验证环境
+</code></pre>
+
+<p><strong>选择理由</strong>: </p>
+<ul>
+<li>✅ <strong>物理隔离，安全性高</strong>：不同环境完全隔离，避免误操作</li>
+<li>✅ <strong>权限管理清晰</strong>：可为不同环境配置独立的访问权限</li>
+<li>✅ <strong>可独立配置CDN策略</strong>：正式环境和测试环境可使用不同的CDN配置</li>
+<li>✅ <strong>符合安全要求</strong>：满足不同环境出于安全考虑的隔离需求</li>
+</ul>
+<h3>2.4 平台配置策略</h3>
+
+<h4>2.4.1 支持的平台类型</h4>
+
+<ul>
+<li>iOS</li>
+<li>Android</li>
+<li>PC</li>
+<li>Harmony</li>
+<li>H5</li>
+</ul>
+<h4>2.4.2 关键结论</h4>
+
+<p><strong>✅ 平台完全隔离策略</strong>：</p>
+<ul>
+<li>每个平台在COS上有独立的目录结构（pak/patch/manifests）</li>
+<li>每个平台有独立的Manifest文件</li>
+<li>平台间资源通过MD5内容寻址自动实现复用（相同内容只存储一份）</li>
+<li>支持平台独立发布和回滚</li>
+</ul>
+<p><strong>COS目录结构</strong>：</p>
+<pre><code class="language-">
+cos://game-resources-{env}/
+├── pool/pak/{platform}/     # 各平台PAK池
+├── pool/patch/{platform}/   # 各平台差分包
+└── manifests/{platform}/    # 各平台Manifest
+</code></pre>
+
+<hr>
+
+<h2>三、Manifest生成与管理服务</h2>
+
+<h3>3.1 Manifest数据结构设计</h3>
+
+<h4>3.1.1 版本号体系设计</h4>
+
+<p><strong>版本号层次结构</strong>：</p>
+
+<pre><code class="language-">
+底包版本（App Version）: A.B.C (3位)
+  ↓ 关联
+Base资源版本（Base Version）: A.B.C.x (4位)
+  - A.B.C: 对应底包版本
+  - x: Base资源热更新序号
+  ↓ 依赖
+MOD版本（MOD Version）: W.X.Y.Z (4位) ⭐
+  - W.X.Y.Z: MOD独立的4位版本号（不强制关联底包版本）
+  - 每个MOD自行管理版本号递增规则
+</code></pre>
+
+<p><strong>版本号语义</strong>：</p>
+
+<table>
+<thead><tr>
+<th>版本类型</th>
+<th>格式</th>
+<th>示例</th>
+<th>变更频率</th>
+<th>说明</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>底包版本</td>
+<td>A.B.C</td>
+<td>1.0.0</td>
+<td>低（2个月）</td>
+<td>二进制大版本更新</td>
+</tr>
+<tr>
+<td>Base资源版本</td>
+<td>A.B.C.x</td>
+<td>1.0.0.5</td>
+<td>中（每周/月）</td>
+<td>前3位对应底包版本，第4位为热更新序号</td>
+</tr>
+<tr>
+<td>MOD版本</td>
+<td>W.X.Y.Z</td>
+<td>1.0.0.1</td>
+<td>高（按需）</td>
+<td>MOD独立的4位版本号 ⭐</td>
+</tr>
+</tbody></table>
+
+<p><strong>关键规则</strong>：</p>
+<ol>
+<li>Base资源版本的前3位必须匹配底包版本（如底包1.0.0对应Base 1.0.0.x）</li>
+<li>MOD版本号为独立的4位版本号，不强制与底包版本号关联 ⭐</li>
+<li>每个二进制版本有独立的Manifest，不考虑跨二进制版本兼容 ⭐</li>
+<li>MOD通过依赖声明明确兼容的Base版本范围（同一二进制版本内）</li>
+</ol>
+<h4>3.1.2 MOD级Manifest（平台独立）</h4>
+
+<pre><code class="language-json">
+{
+  &quot;mod_manifest_id&quot;: &quot;mod_a_v1.0.0.1_ios_20260110&quot;,
+  &quot;mod_id&quot;: &quot;mod_a&quot;,
+  &quot;mod_version&quot;: &quot;1.0.0.1&quot;,  // MOD独立的4位版本号 ⭐
+  &quot;platform&quot;: &quot;ios&quot;,
+  &quot;content_hash&quot;: &quot;sha256_of_all_paks&quot;,
+  &quot;created_at&quot;: &quot;2026-01-10T12:00:00Z&quot;,
+  
+  // 依赖声明（简化）⭐
+  &quot;dependencies&quot;: {
+    &quot;platform_base&quot;: {
+      &quot;app_version&quot;: &quot;1.0.0&quot;,              // 依赖的底包版本（必须匹配）⭐
+      &quot;min_base_version&quot;: &quot;1.0.0.1&quot;,       // 最低兼容Base版本
+      &quot;max_base_version&quot;: &quot;1.0.0.5&quot;        // 最高兼容Base版本
+    }
+  },
+  
+  &quot;paks&quot;: [
+    {
+      &quot;pak_name&quot;: &quot;mod_a_level_01.pak&quot;,
+      &quot;pak_md5&quot;: &quot;abcdef123456...&quot;,
+      &quot;size&quot;: 102400,
+      &quot;compressed_size&quot;: 51200,
+      
+      // COS路径包含平台
+      &quot;cos_url&quot;: &quot;pool/pak/ios/ab/abcdef123456...pak&quot;,
+      
+      // CDN URL也包含平台
+      &quot;cdn_url&quot;: &quot;https://cdn-ios.xxx.com/pak/ab/abcdef123456...pak&quot;,
+      
+      &quot;upload_time&quot;: &quot;2026-01-10T12:00:00Z&quot;,
+      &quot;mount_point&quot;: &quot;/Game/ModA/&quot;,
+      
+      &quot;patches&quot;: [
+        {
+          &quot;from_md5&quot;: &quot;xyz789...&quot;,
+          &quot;patch_md5&quot;: &quot;patch123...&quot;,
+          
+          // 差分包路径包含平台
+          &quot;patch_url&quot;: &quot;pool/patch/ios/12/xyz789_to_abcdef.hdiff&quot;,
+          
+          &quot;patch_size&quot;: 10240,
+          &quot;compression_ratio&quot;: 0.1,
+          &quot;created_at&quot;: &quot;2026-01-10T12:00:00Z&quot;
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<h4>3.1.3 平台基础资源Manifest（Base Manifest）</h4>
+
+<p><strong>文件路径</strong>：</p>
+<pre><code class="language-">
+cos://game-resources-{env}/manifests/base/{platform}/{base_version}.json
+</code></pre>
+
+<p><strong>Manifest结构</strong>：</p>
+<pre><code class="language-json">
+{
+  &quot;manifest_id&quot;: &quot;base_ios_1.0.0.5_20260110&quot;,
+  &quot;manifest_type&quot;: &quot;platform_base&quot;,
+  &quot;platform&quot;: &quot;ios&quot;,
+  &quot;app_version&quot;: &quot;1.0.0&quot;,        // 对应的底包版本（3位）
+  &quot;base_version&quot;: &quot;1.0.0.5&quot;,    // Base资源版本（4位）
+  &quot;created_at&quot;: &quot;2026-01-10T12:00:00Z&quot;,
+  
+  // 依赖变化标记（简化）⭐
+  &quot;has_breaking_changes&quot;: true,  // 是否有影响MOD兼容的变化
+  &quot;change_description&quot;: &quot;本次更新修改了核心材质参数和部分蓝图接口，请MOD开发者注意兼容性测试&quot;,  // 可选的变化说明
+  
+  &quot;base_paks&quot;: [
+    {
+      &quot;pak_name&quot;: &quot;platform_core.pak&quot;,
+      &quot;pak_md5&quot;: &quot;abc123...&quot;,
+      &quot;pak_size&quot;: 104857600,
+      &quot;pak_type&quot;: &quot;core&quot;,
+      &quot;cos_url&quot;: &quot;pool/pak/ios/ab/abc123...pak&quot;
+    }
+  ]
+}
+</code></pre>
+
+<h4>3.1.4 客户端Manifest组合策略 ⭐</h4>
+
+<p><strong>核心原则</strong>：</p>
+<ul>
+<li>✅ <strong>Base + MOD独立Manifest</strong>：Base和每个MOD都有独立的Manifest文件</li>
+<li>✅ <strong>客户端按需组合</strong>：客户端根据用户选择的MOD，动态组合Base和MOD Manifest</li>
+</ul>
+<p><strong>Manifest文件组织</strong>（详见2.2章节目录结构）：</p>
+<ul>
+<li>Base Manifest路径：<code>manifests/{platform}/base/{base_version}.json</code></li>
+<li>MOD Manifest路径：<code>manifests/{platform}/mod/{mod<em>id}/{mod</em>version}.json</code></li>
+</ul>
+<p><strong>客户端组合流程</strong>：</p>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[客户端启动] --&gt; B[获取平台和底包版本]
+    B --&gt; C[下载Base Manifest]
+    C --&gt; D[解析Base版本和依赖变化]
+    D --&gt; E{用户选择MOD?}
+    E --&gt;|是| F[下载MOD Manifest]
+    E --&gt;|否| G[只使用Base资源]
+    F --&gt; H[检查MOD依赖兼容性]
+    H --&gt; I{兼容?}
+    I --&gt;|是| J[组合Base + MOD资源列表]
+    I --&gt;|否| K[提示用户MOD不兼容]
+    J --&gt; L[计算需要下载的资源]
+    G --&gt; L
+    L --&gt; M[执行下载决策]
+</code></pre>
+
+<p><strong>关键优势</strong>：</p>
+<ul>
+<li>✅ <strong>解耦设计</strong>：Base和MOD完全独立，互不影响</li>
+<li>✅ <strong>按需加载</strong>：客户端只下载需要的MOD Manifest</li>
+<li>✅ <strong>灵活组合</strong>：用户可以自由选择启用哪些MOD</li>
+<li>✅ <strong>兼容性检查</strong>：客户端在加载MOD时自动检查兼容性</li>
+<li>✅ <strong>简化管理</strong>：管理端不需要维护聚合的Manifest文件</li>
+</ul>
+<h3>3.2 Manifest生成流程</h3>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[构建系统输出PAK] --&gt; B[计算PAK MD5]
+    B --&gt; C{MD5已存在?}
+    C --&gt;|是| D[复用已有PAK]
+    C --&gt;|否| E[上传到COS Pool]
+    D --&gt; F[记录到管理端数据库]
+    E --&gt; F
+    F --&gt; G[生成差分包任务]
+    G --&gt; H[从管理端数据库查询聚合数据]
+    H --&gt; I[生成Manifest JSON]
+    I --&gt; J[签名Manifest]
+    J --&gt; K[上传Manifest到COS]
+    K --&gt; L[更新版本索引]
+    L --&gt; M[触发CDN预热]
+</code></pre>
+
+<p><strong>核心设计理念</strong>：</p>
+
+<p><strong>✅ 管理端数据库是唯一数据源</strong>：</p>
+<ul>
+<li>所有PAK信息（MD5、大小、上传时间、平台等）存储在管理端数据库</li>
+<li>所有MOD信息（版本、依赖关系、PAK列表等）存储在管理端数据库</li>
+<li>所有差分包信息（from/to MD5、大小、生成时间等）存储在管理端数据库</li>
+<li>所有版本历史和发布记录存储在管理端数据库</li>
+</ul>
+<p><strong>✅ Manifest是数据视图（输出文件）</strong>：</p>
+<ul>
+<li>Manifest文件是根据管理端数据库信息生成的JSON文件</li>
+<li>Manifest上传到COS后，作为客户端的数据视图</li>
+<li>Manifest不是数据源，而是数据的快照和展示形式</li>
+<li>客户端只读取Manifest，不修改Manifest</li>
+</ul>
+<p><strong>✅ 数据流向单向</strong>：</p>
+<pre><code class="language-">
+管理端数据库（唯一数据源）
+    ↓ 查询聚合
+Manifest生成服务
+    ↓ 输出JSON
+COS Manifest文件（客户端数据视图）
+    ↓ CDN分发
+客户端读取
+</code></pre>
+
+<p><strong>✅ 管理端操作流程</strong>：</p>
+<ol>
+<li><strong>构建阶段</strong>：PAK上传 → 记录到数据库 → 生成差分包 → 更新数据库</li>
+<li><strong>发布阶段</strong>：查询数据库 → 聚合数据 → 生成Manifest → 上传到COS</li>
+<li><strong>查询阶段</strong>：管理端需要信息时，直接查询数据库，不依赖Manifest</li>
+<li><strong>回滚阶段</strong>：查询历史版本数据 → 重新生成Manifest → 上传到COS</li>
+</ol>
+<h3>3.3 Manifest复用机制</h3>
+
+<h4>3.3.1 复用场景</h4>
+
+<p><strong>典型场景</strong>：先遣环境中新增一个APP版本，但某MOD没有任何资产修改，可以基于之前的Manifest导出一份用于新的APP版本。</p>
+
+<p><strong>复用条件</strong>：</p>
+<ul>
+<li>MOD的PAK列表完全相同（基于content_hash判断）</li>
+<li>目标平台相同</li>
+<li>依赖的共享资源版本兼容</li>
+</ul>
+<h4>3.3.2 复用流程</h4>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[管理员发起复用] --&gt; B[选择源Manifest]
+    B --&gt; C[选择目标APP版本]
+    C --&gt; D[系统检测MOD变更]
+    D --&gt; E{MOD有变更?}
+    E --&gt;|是| F[提示:该MOD已变更,不能复用]
+    E --&gt;|否| G[自动生成新Manifest]
+    G --&gt; H[复用MOD Manifest引用]
+    H --&gt; I[生成新的APP Manifest]
+    I --&gt; J[预览复用结果]
+    J --&gt; K{确认复用?}
+    K --&gt;|是| L[签名并上传]
+    K --&gt;|否| M[取消操作]
+    L --&gt; N[更新版本索引]
+</code></pre>
+
+<h4>3.3.3 管理端界面支持</h4>
+
+<p><strong>功能点</strong>：</p>
+<ol>
+<li><strong>复用检测</strong>：自动检测哪些MOD可以复用</li>
+<li><strong>批量复用</strong>：支持一次性复用多个MOD的Manifest</li>
+<li><strong>预览对比</strong>：复用前预览新旧Manifest的差异</li>
+<li><strong>一键复用</strong>：确认后一键完成复用操作</li>
+</ol>
+<p><strong>界面示意</strong>：</p>
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────┐
+│ Manifest复用工具                                         │
+├─────────────────────────────────────────────────────────┤
+│ 源APP版本: 1.0.0  →  目标APP版本: 1.1.0                  │
+│ 平台: iOS                                                │
+├─────────────────────────────────────────────────────────┤
+│ MOD列表:                                                 │
+│ ☑ mod_a (v1.2.3)  ✅ 可复用 (content_hash一致)          │
+│ ☐ mod_b (v2.0.1)  ❌ 不可复用 (内容已变更)              │
+│ ☑ mod_c (v1.0.0)  ✅ 可复用 (无变更)                    │
+├─────────────────────────────────────────────────────────┤
+│ [预览复用结果] [执行复用] [取消]                         │
+└─────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>3.4 Manifest管理服务API设计</h3>
+
+<h4>3.4.1 核心接口</h4>
+
+<pre><code class="language-go">
+// Manifest管理服务接口
+type ManifestService interface {
+    // 创建新Manifest
+    CreateManifest(req *CreateManifestRequest) (*Manifest, error)
+    
+    // 获取Manifest
+    GetManifest(appVersion, manifestID string) (*Manifest, error)
+    
+    // 获取最新Manifest
+    GetLatestManifest(appVersion string, env Environment) (*Manifest, error)
+    
+    // 比较两个Manifest差异
+    DiffManifest(fromID, toID string) (*ManifestDiff, error)
+    
+    // 合并多个MOD的Manifest
+    MergeModManifests(modIDs []string) (*Manifest, error)
+    
+    // 回滚到指定Manifest
+    RollbackManifest(manifestID string) error
+    
+    // 发布Manifest到指定环境
+    PublishManifest(manifestID string, env Environment) error
+}
+</code></pre>
+
+<h4>3.4.2 版本冲突解决策略</h4>
+
+<p><strong>场景</strong>: 多个MOD同时更新时，可能依赖不同版本的共享PAK</p>
+
+<p><strong>解决方案</strong>:</p>
+<ol>
+<li><strong>版本锁定</strong>: 在Manifest中明确指定依赖的PAK版本</li>
+<li><strong>依赖图检查</strong>: 构建时检测循环依赖和版本冲突</li>
+<li><strong>最小公共版本</strong>: 自动选择满足所有MOD的最小公共版本</li>
+<li><strong>冲突告警</strong>: 无法自动解决时，阻止发布并告警</li>
+</ol>
+<pre><code class="language-go">
+// 依赖冲突检测
+func (s *ManifestService) DetectConflicts(mods []*ModManifest) (*ConflictReport, error) {
+    graph := buildDependencyGraph(mods)
+    
+    // 检测循环依赖
+    if cycles := detectCycles(graph); len(cycles) &gt; 0 {
+        return &amp;ConflictReport{Type: &quot;circular_dependency&quot;, Cycles: cycles}, nil
+    }
+    
+    // 检测版本冲突
+    conflicts := detectVersionConflicts(graph)
+    if len(conflicts) &gt; 0 {
+        return &amp;ConflictReport{Type: &quot;version_conflict&quot;, Conflicts: conflicts}, nil
+    }
+    
+    return nil, nil
+}
+</code></pre>
+
+<h3>3.4 客户端下载决策原则</h3>
+
+<h4>3.4.1 决策原则</h4>
+
+<p>客户端根据Manifest中的资产清单，智能决策每个PAK的下载方式（增量/全量）。决策流程完全由客户端驱动，服务端只提供Manifest和资源文件。</p>
+
+<p><strong>核心原则</strong>：</p>
+<ol>
+<li><strong>Manifest驱动</strong>：所有下载决策基于Manifest中的PAK列表和差分包信息</li>
+<li><strong>智能选择</strong>：优先使用差分包，失败时自动降级到全量下载</li>
+<li><strong>多重降级</strong>：差分包应用失败 → 全量下载 → 使用本地缓存 → 使用底包资源</li>
+<li><strong>环境感知</strong>：根据网络环境（WiFi/4G/5G）和存储空间动态调整策略</li>
+</ol>
+<h4>3.4.2 决策算法</h4>
+
+<pre><code class="language-cpp">
+// 客户端下载决策伪代码
+DownloadStrategy DecideDownloadStrategy(const FPakInfo&amp; PakInfo) {
+    // 1. 检查本地是否已有该PAK（基于MD5）
+    if (LocalPakExists(PakInfo.MD5) &amp;&amp; VerifyLocalPak(PakInfo.MD5)) {
+        return DownloadStrategy::Skip;  // 跳过下载
+    }
+    
+    // 2. 检查是否有可用的差分包
+    FString LocalMD5 = GetLocalPakMD5(PakInfo.Name);
+    if (!LocalMD5.IsEmpty()) {
+        FPatchInfo* Patch = FindPatch(LocalMD5, PakInfo.MD5);
+        if (Patch != nullptr) {
+            // 评估差分包是否值得使用
+            if (ShouldUsePatch(Patch, PakInfo)) {
+                return DownloadStrategy::Patch;  // 使用差分包
+            }
+        }
+    }
+    
+    // 3. 默认全量下载
+    return DownloadStrategy::Full;
+}
+
+// 评估差分包是否值得使用
+bool ShouldUsePatch(const FPatchInfo* Patch, const FPakInfo&amp; PakInfo) {
+    // 因素1：差分包大小 vs 完整PAK大小
+    float SizeRatio = (float)Patch-&gt;Size / PakInfo.Size;
+    if (SizeRatio &gt; 0.7f) {
+        return false;  // 差分包太大，不如全量下载
+    }
+    
+    // 因素2：网络环境（WiFi优先全量，4G优先差分）
+    if (IsWiFiConnected() &amp;&amp; PakInfo.Size &lt; 100 * 1024 * 1024) {
+        return false;  // WiFi环境下，小于100MB直接全量下载
+    }
+    
+    // 因素3：存储空间（差分包需要额外空间）
+    int64 RequiredSpace = Patch-&gt;Size + PakInfo.Size;  // 差分包+新PAK
+    if (GetAvailableSpace() &lt; RequiredSpace * 1.5f) {
+        return false;  // 存储空间不足
+    }
+    
+    return true;
+}
+</code></pre>
+
+<h4>3.4.3 下载流程</h4>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[解析Manifest] --&gt; B[遍历PAK列表]
+    B --&gt; C{本地已有?}
+    C --&gt;|是| D[验证MD5]
+    C --&gt;|否| E{有差分包?}
+    D --&gt; F{验证通过?}
+    F --&gt;|是| G[跳过下载]
+    F --&gt;|否| E
+    E --&gt;|是| H{差分包值得用?}
+    E --&gt;|否| I[全量下载PAK]
+    H --&gt;|是| J[下载差分包]
+    H --&gt;|否| I
+    J --&gt; K[应用差分包]
+    K --&gt; L{应用成功?}
+    L --&gt;|是| M[验证新PAK MD5]
+    L --&gt;|否| N[降级:全量下载]
+    N --&gt; I
+    I --&gt; M
+    M --&gt; O{验证通过?}
+    O --&gt;|是| G
+    O --&gt;|否| P[重试/报错]
+    G --&gt; Q{所有PAK完成?}
+    Q --&gt;|否| B
+    Q --&gt;|是| R[更新完成]
+</code></pre>
+
+<h4>3.4.4 降级策略</h4>
+
+<table>
+<thead><tr>
+<th>场景</th>
+<th>降级方案</th>
+<th>说明</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>差分包下载失败</td>
+<td>全量下载PAK</td>
+<td>网络问题或差分包不存在</td>
+</tr>
+<tr>
+<td>差分包应用失败</td>
+<td>全量下载PAK</td>
+<td>差分包损坏或本地PAK异常</td>
+</tr>
+<tr>
+<td>全量下载失败</td>
+<td>使用本地缓存</td>
+<td>如果本地有旧版本PAK</td>
+</tr>
+<tr>
+<td>本地缓存不可用</td>
+<td>使用底包资源</td>
+<td>降级到APP内置的基础资源</td>
+</tr>
+<tr>
+<td>底包资源缺失</td>
+<td>提示用户重新安装</td>
+<td>最后的兜底方案</td>
+</tr>
+</tbody></table>
+
+<h4>3.4.5 接口规范</h4>
+
+<p><strong>Manifest接口</strong>（客户端从CDN获取）：</p>
+<pre><code class="language-">
+GET https://cdn.xxx.com/manifests/app/{platform}/{app_version}_latest.json
+
+Response:
+{
+  &quot;manifest_id&quot;: &quot;...&quot;,
+  &quot;platforms&quot;: {
+    &quot;ios&quot;: {
+      &quot;mod_manifests&quot;: [
+        {
+          &quot;mod_id&quot;: &quot;mod_a&quot;,
+          &quot;mod_manifest_url&quot;: &quot;manifests/mod/mod_a/ios/1.2.3_20260110.json&quot;
+        }
+      ]
+    }
+  }
+}
+</code></pre>
+
+<p><strong>MOD Manifest接口</strong>：</p>
+<pre><code class="language-">
+GET https://cdn.xxx.com/manifests/mod/mod_a/ios/1.2.3_20260110.json
+
+Response:
+{
+  &quot;paks&quot;: [
+    {
+      &quot;pak_name&quot;: &quot;mod_a_level_01.pak&quot;,
+      &quot;pak_md5&quot;: &quot;abcdef123456...&quot;,
+      &quot;cdn_url&quot;: &quot;https://cdn-ios.xxx.com/pak/ab/abcdef123456...pak&quot;,
+      &quot;patches&quot;: [
+        {
+          &quot;from_md5&quot;: &quot;xyz789...&quot;,
+          &quot;patch_url&quot;: &quot;https://cdn-ios.xxx.com/patch/12/xyz789_to_abcdef.hdiff&quot;,
+          &quot;patch_size&quot;: 10240
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<hr>
+
+<h2>四、差分包生成与管理策略</h2>
+
+<h3>4.1 差分包生成时机与策略</h3>
+
+<h4>4.1.1 生成时机（管理端全链路支持）</h4>
+
+<p><strong>方案：管理端驱动的灵活生成策略</strong></p>
+
+<p>差分包生成由管理端统一调度，支持两种生成时机：</p>
+
+<p><strong>时机1：构建时同步生成（推荐）</strong></p>
+<pre><code class="language-">
+构建PAKs/Diffs → 上传PAKs/Diffs → 构建Manifest → 发布
+</code></pre>
+<ul>
+<li>✅ 优点：Manifest发布时差分包已就绪，用户体验最佳</li>
+<li>❌ 缺点：构建流程较长，阻塞Manifest发布</li>
+<li>🎯 适用场景：正式环境发布、重要版本更新</li>
+</ul>
+<p><strong>时机2：构建后异步生成</strong></p>
+<pre><code class="language-">
+构建PAKs → 上传PAKs → 构建Manifest(v1) → 发布
+                    ↓
+              异步生成Diffs → 刷新Manifest(v2) → 重新发布
+</code></pre>
+<ul>
+<li>✅ 优点：不阻塞Manifest发布，构建流程快</li>
+<li>❌ 缺点：短期内用户只能全量下载</li>
+<li>🎯 适用场景：测试环境、紧急修复</li>
+</ul>
+<p><strong>管理端支持</strong>：</p>
+<ul>
+<li>管理端数据库保存完整的Manifest构建信息</li>
+<li>支持在任意时刻补充生成差分包</li>
+<li>差分包生成完成后，自动刷新Manifest并重新上传</li>
+<li>提供差分包生成进度监控和失败重试</li>
+</ul>
+<h4>4.1.2 生成流程</h4>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[PAK上传完成] --&gt; B{选择生成时机}
+    B --&gt;|同步生成| C[立即生成差分包]
+    B --&gt;|异步生成| D[先发布Manifest v1]
+    C --&gt; E[应用生成策略]
+    E --&gt; F[提交差分任务队列]
+    F --&gt; G[Worker生成差分包]
+    G --&gt; H[上传到COS]
+    H --&gt; I[更新数据库]
+    I --&gt; J[刷新Manifest]
+    J --&gt; K[重新上传Manifest]
+    D --&gt; L[异步触发差分生成]
+    L --&gt; E
+    K --&gt; M[发布完成]
+</code></pre>
+
+<h4>4.1.3 配置结构（简化版）</h4>
+
+<pre><code class="language-go">
+type PatchGenerationConfig struct {
+    // ===== 门槛配置（核心） =====
+    MinPakSize           int64   // 最小PAK大小（默认1MB）
+    MaxPakSize           int64   // 最大PAK大小（默认1GB）
+    MinCompressionRatio  float64 // 最小压缩率（默认0.7）
+    
+    // ===== 基准版本选择（简化） =====
+    RecentVersionCount   int      // 最近N个版本（默认3）
+    ManualVersions       []string // 手动指定的版本MD5列表
+    
+    // ===== 告警配置（而非硬性限制） =====
+    MaxPatchCount        int      // 差分包数量告警阈值（默认5）
+    WarnOnExceed         bool     // 超过阈值时是否告警（默认true）
+}
+</code></pre>
+
+<p><strong>配置说明</strong>：</p>
+<ul>
+<li>门槛配置：基于PAK大小和压缩率判断是否生成差分包</li>
+<li>基准版本选择：支持最近N个版本和手动指定版本两种策略</li>
+<li>告警配置：MaxPatchCount作为告警阈值，不阻止生成，只提示超过阈值</li>
+</ul>
+<h4>4.1.4 基准版本选择算法（简化版）</h4>
+
+<pre><code class="language-python">
+def select_base_versions(
+    pak_name: str,
+    platform: Platform,
+    config: PatchGenerationConfig
+) -&gt; List[PakInfo]:
+    &quot;&quot;&quot;
+    选择基准版本（简化版）
+    &quot;&quot;&quot;
+    base_versions = []
+    
+    # 策略1：最近N个版本
+    recent_versions = get_recent_versions(pak_name, platform, config.recent_version_count)
+    base_versions.extend(recent_versions)
+    
+    # 策略2：手动指定的版本
+    for version_md5 in config.manual_versions:
+        pak_info = get_pak_by_md5(version_md5, platform)
+        if pak_info and pak_info not in base_versions:
+            base_versions.append(pak_info)
+    
+    # 去重
+    base_versions = list(set(base_versions))
+    
+    return base_versions
+
+
+def should_generate_patch(
+    from_pak: PakInfo, 
+    to_pak: PakInfo, 
+    config: PatchGenerationConfig
+) -&gt; Tuple[bool, str]:
+    &quot;&quot;&quot;
+    判断是否应该生成差分包（简化版）
+    返回: (是否生成, 原因)
+    &quot;&quot;&quot;
+    # 门槛1：目标PAK太小（&lt; 1MB）
+    if to_pak.size &lt; config.min_pak_size:
+        return False, f&quot;Target PAK too small: {to_pak.size} &lt; {config.min_pak_size}&quot;
+    
+    # 门槛2：目标PAK太大（&gt; 1GB）
+    if to_pak.size &gt; config.max_pak_size:
+        return False, f&quot;Target PAK too large: {to_pak.size} &gt; {config.max_pak_size}&quot;
+    
+    return True, &quot;OK&quot;
+
+
+def generate_patches_with_warning(
+    pak_md5: str, 
+    platform: Platform,
+    config: PatchGenerationConfig
+) -&gt; PatchGenerationResult:
+    &quot;&quot;&quot;
+    生成差分包（带告警检查）
+    &quot;&quot;&quot;
+    # 1. 选择基准版本
+    base_versions = select_base_versions(pak_md5, platform, config)
+    
+    # 2. 计算总数量
+    total_count = len(base_versions)
+    
+    # 3. 告警检查（而非阻止）
+    if config.warn_on_exceed and total_count &gt; config.max_patch_count:
+        warning = f&quot;&quot;&quot;
+        ⚠️ 差分包数量({total_count})超过告警阈值({config.max_patch_count})，预计生成耗时较长。
+          - 最近{config.recent_version_count}个版本: {len(recent_versions)}个
+          - 手动指定版本: {len(config.manual_versions)}个
+        建议: 减少手动指定的版本数量或调整最近版本数量。
+        &quot;&quot;&quot;
+        
+        # 记录告警日志
+        logger.warn(warning)
+        
+        # 返回告警信息（但不阻止生成）
+        return PatchGenerationResult(
+            warning=warning,
+            base_versions=base_versions,
+            estimated_time=estimate_generation_time(total_count),
+        )
+    
+    # 4. 继续生成差分包
+    return do_generate_patches(base_versions)
+</code></pre>
+
+<h4>4.1.5 差分包生成流程（管理端视角）</h4>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[管理端:PAK上传完成] --&gt; B[查询数据库:历史版本]
+    B --&gt; C[应用生成策略配置]
+    C --&gt; D[选择基准版本]
+    D --&gt; E{数量超过阈值?}
+    E --&gt;|是| F[记录告警日志]
+    E --&gt;|否| G[提交差分任务队列]
+    F --&gt; G
+    G --&gt; H[Worker:异步生成差分包]
+    H --&gt; I[上传到COS Pool]
+    I --&gt; J[更新数据库]
+    J --&gt; K{同步生成模式?}
+    K --&gt;|是| L[等待全部完成]
+    K --&gt;|否| M[继续发布流程]
+    L --&gt; N[刷新Manifest]
+    N --&gt; O[重新上传Manifest]
+    O --&gt; P[通知CDN刷新]
+</code></pre>
+
+<p><strong>管理端职责</strong>：</p>
+<ol>
+<li>维护完整的PAK版本历史（数据库）</li>
+<li>根据配置决策差分包生成策略</li>
+<li>调度差分包生成任务</li>
+<li>监控生成进度和成功率</li>
+<li>差分包完成后自动刷新Manifest</li>
+<li>提供手动补充生成差分包的入口</li>
+</ol>
+<h3>4.2 差分包命名与存储</h3>
+
+<p><strong>命名规则</strong>:</p>
+<pre><code class="language-">
+{from_md5_prefix}_{to_md5_prefix}.hdiff
+例: 123456_789abc.hdiff
+</code></pre>
+
+<p><strong>存储路径</strong>（包含平台维度）:</p>
+<pre><code class="language-">
+pool/patch/{platform}/{to_md5前2位}/{from_md5前6位}_to_{to_md5前6位}.hdiff
+
+示例：
+pool/patch/ios/78/123456_to_789abc.hdiff      # iOS平台
+pool/patch/android/78/123456_to_789abc.hdiff  # Android平台
+pool/patch/pc/78/123456_to_789abc.hdiff       # PC平台
+</code></pre>
+
+<p><strong>关键点</strong>：</p>
+<ul>
+<li>✅ 按平台隔离存储</li>
+<li>✅ 使用MD5前2位分片（256个目录）</li>
+<li>✅ 文件名包含from和to的MD5前缀，便于识别</li>
+</ul>
+<h3>4.3 差分包注册表设计</h3>
+
+<pre><code class="language-json">
+{
+  &quot;patch_id&quot;: &quot;uuid&quot;,
+  &quot;platform&quot;: &quot;ios&quot;,  // 平台标识
+  &quot;from_pak_md5&quot;: &quot;123456...&quot;,
+  &quot;to_pak_md5&quot;: &quot;789abc...&quot;,
+  &quot;patch_size&quot;: 10240,
+  &quot;compression_ratio&quot;: 0.1,
+  &quot;patch_url&quot;: &quot;pool/patch/ios/78/123456_to_789abc.hdiff&quot;,  // 包含平台路径
+  &quot;created_at&quot;: &quot;2026-01-10T12:00:00Z&quot;,
+  &quot;status&quot;: &quot;active&quot;,  // active | deprecated | deleted
+  &quot;download_count&quot;: 1000,
+  &quot;success_rate&quot;: 0.98
+}
+</code></pre>
+
+<hr>
+
+<h2>五、资源清理服务方案</h2>
+
+<h3>5.1 清理策略设计</h3>
+
+<h4>5.1.1 PAK文件清理规则</h4>
+
+<p><strong>保留条件</strong>（满足任一即保留）:</p>
+<ol>
+<li>被任何活跃Manifest引用</li>
+<li>属于最近3个月的版本</li>
+<li>用户占比 > 1%</li>
+<li>标记为"重要版本"（如底包版本）</li>
+</ol>
+<p><strong>清理条件</strong>（同时满足才清理）:</p>
+<ol>
+<li>未被任何Manifest引用</li>
+<li>创建时间 > 6个月</li>
+<li>最近30天下载量 < 10次</li>
+</ol>
+<h4>5.1.2 差分包清理规则</h4>
+
+<p><strong>清理条件</strong>:</p>
+<ol>
+<li>基准版本已被清理</li>
+<li>目标版本已被清理</li>
+<li>创建时间 > 3个月 且 下载量 < 5次</li>
+<li>标记为"失效"状态</li>
+</ol>
+<h4>5.1.3 Manifest清理规则</h4>
+
+<p><strong>保留策略</strong>:</p>
+<ol>
+<li>每个APP版本保留最近10个Manifest</li>
+<li>标记为"重要版本"的Manifest永久保留</li>
+<li>最近30天的Manifest全部保留</li>
+</ol>
+<h3>5.2 清理服务架构</h3>
+
+<pre><code class="language-go">
+type CleanupService struct {
+    cosClient    *cos.Client
+    db           *sql.DB
+    redis        *redis.Client
+    config       *CleanupConfig
+}
+
+type CleanupConfig struct {
+    DryRun              bool          // 是否为模拟运行
+    PakRetentionDays    int           // PAK保留天数
+    PatchRetentionDays  int           // 差分包保留天数
+    MinUserPercentage   float64       // 最小用户占比
+    CleanupBatchSize    int           // 批量清理大小
+    CleanupInterval     time.Duration // 清理间隔
+}
+
+// 执行清理任务
+func (s *CleanupService) RunCleanup() error {
+    // 1. 扫描待清理资源
+    candidates := s.scanCleanupCandidates()
+    
+    // 2. 安全检查
+    safeToDelete := s.safetyCheck(candidates)
+    
+    // 3. 生成清理报告
+    report := s.generateCleanupReport(safeToDelete)
+    
+    // 4. 执行清理（需人工审批）
+    if !s.config.DryRun {
+        s.executeCleanup(safeToDelete)
+    }
+    
+    // 5. 记录清理日志
+    s.logCleanup(report)
+    
+    return nil
+}
+</code></pre>
+
+<h3>5.3 清理流程</h3>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[定时触发清理任务] --&gt; B[扫描COS资源]
+    B --&gt; C[应用清理规则]
+    C --&gt; D[生成清理候选列表]
+    D --&gt; E[安全检查]
+    E --&gt; F{需要人工审批?}
+    F --&gt;|是| G[发送审批通知]
+    F --&gt;|否| H[执行清理]
+    G --&gt; I[等待审批]
+    I --&gt; J{审批通过?}
+    J --&gt;|是| H
+    J --&gt;|否| K[取消清理]
+    H --&gt; L[移动到归档目录]
+    L --&gt; M[更新注册表]
+    M --&gt; N[生成清理报告]
+</code></pre>
+
+<h3>5.4 成本优化建议</h3>
+
+<ol>
+<li><strong>分层存储</strong>:
+<ul>
+<li>热数据（最近30天）: COS标准存储</li>
+<li>温数据（30-90天）: COS低频存储</li>
+<li>冷数据（90天+）: COS归档存储</li>
+</ul>
+</li>
+<li><strong>CDN缓存策略</strong>:
+<ul>
+<li>热门PAK: 缓存7天</li>
+<li>普通PAK: 缓存1天</li>
+<li>差分包: 缓存3天</li>
+</ul>
+</li>
+<li><strong>压缩优化</strong>:
+<ul>
+<li>PAK文件使用UE4内置压缩</li>
+<li>差分包使用HDiffPatch压缩</li>
+</ul>
+</li>
+</ol>
+<hr>
+
+<h2>六、管理端架构设计</h2>
+
+<h3>6.1 系统架构图</h3>
+
+<pre><code class="language-mermaid">
+graph TB
+    subgraph &quot;前端层&quot;
+        A[管理后台Web]
+        B[CLI工具]
+    end
+    
+    subgraph &quot;API网关层&quot;
+        C[API Gateway]
+        D[认证鉴权]
+    end
+    
+    subgraph &quot;服务层&quot;
+        E[Manifest服务]
+        F[资源上传服务]
+        G[差分包服务]
+        H[清理服务]
+        I[版本管理服务]
+        J[监控告警服务]
+    end
+    
+    subgraph &quot;数据层&quot;
+        K[(MySQL)]
+        L[(Redis)]
+        M[COS存储]
+    end
+    
+    subgraph &quot;任务队列&quot;
+        N[消息队列MQ]
+        O[异步任务Worker]
+    end
+    
+    A --&gt; C
+    B --&gt; C
+    C --&gt; D
+    D --&gt; E
+    D --&gt; F
+    D --&gt; G
+    D --&gt; H
+    D --&gt; I
+    D --&gt; J
+    
+    E --&gt; K
+    E --&gt; L
+    E --&gt; M
+    F --&gt; M
+    F --&gt; N
+    G --&gt; N
+    H --&gt; K
+    H --&gt; M
+    
+    N --&gt; O
+    O --&gt; M
+    O --&gt; K
+</code></pre>
+
+<h3>6.2 核心功能模块</h3>
+
+<h4>6.2.1 资源构建与上传模块</h4>
+
+<p><strong>功能</strong>:</p>
+<ul>
+<li>接收构建系统输出的PAK文件</li>
+<li>计算MD5并检查是否已存在</li>
+<li>上传新PAK到COS Pool</li>
+<li>更新PAK注册表</li>
+</ul>
+<p><strong>接口</strong>:</p>
+<pre><code class="language-go">
+// 上传PAK文件
+POST /api/v1/resources/upload
+Request:
+{
+  &quot;mod_id&quot;: &quot;mod_a&quot;,
+  &quot;app_version&quot;: &quot;1.0.0&quot;,
+  &quot;files&quot;: [
+    {
+      &quot;file_name&quot;: &quot;mod_a_level_01.pak&quot;,
+      &quot;file_path&quot;: &quot;/path/to/pak&quot;,
+      &quot;mount_point&quot;: &quot;/Game/ModA/&quot;
+    }
+  ]
+}
+
+Response:
+{
+  &quot;upload_id&quot;: &quot;uuid&quot;,
+  &quot;results&quot;: [
+    {
+      &quot;file_name&quot;: &quot;mod_a_level_01.pak&quot;,
+      &quot;md5&quot;: &quot;abcdef123456...&quot;,
+      &quot;status&quot;: &quot;uploaded&quot; | &quot;skipped&quot;,  // skipped表示已存在
+      &quot;url&quot;: &quot;pool/pak/ab/abcdef123456...pak&quot;
+    }
+  ]
+}
+</code></pre>
+
+<h4>6.2.2 Manifest构建与发布模块</h4>
+
+<p><strong>功能</strong>:</p>
+<ul>
+<li>创建新Manifest</li>
+<li>合并多个MOD的Manifest</li>
+<li>版本冲突检测</li>
+<li>Manifest签名与验证</li>
+<li>发布到指定环境</li>
+</ul>
+<p><strong>工作流</strong>:</p>
+<pre><code class="language-mermaid">
+graph LR
+    A[创建Manifest] --&gt; B[选择MOD版本]
+    B --&gt; C[依赖检查]
+    C --&gt; D{有冲突?}
+    D --&gt;|是| E[冲突解决]
+    D --&gt;|否| F[生成Manifest]
+    E --&gt; F
+    F --&gt; G[预览与审批]
+    G --&gt; H{审批通过?}
+    H --&gt;|是| I[签名Manifest]
+    H --&gt;|否| J[驳回]
+    I --&gt; K[发布到测试环境]
+    K --&gt; L[验证测试]
+    L --&gt; M{测试通过?}
+    M --&gt;|是| N[发布到正式环境]
+    M --&gt;|否| O[回滚]
+</code></pre>
+
+<h4>6.2.3 差分包管理模块</h4>
+
+<p><strong>功能</strong>:</p>
+<ul>
+<li>自动触发差分包生成任务</li>
+<li>监控差分包生成进度</li>
+<li>差分包质量检查（大小、成功率）</li>
+<li>差分包失效管理</li>
+</ul>
+<p><strong>任务调度</strong>:</p>
+<pre><code class="language-python">
+class PatchGenerationScheduler:
+    def on_new_pak_uploaded(self, pak_md5: str):
+        &quot;&quot;&quot;新PAK上传时触发&quot;&quot;&quot;
+        base_versions = select_base_versions(pak_md5)
+        for base_md5 in base_versions:
+            task = PatchGenerationTask(
+                from_md5=base_md5,
+                to_md5=pak_md5,
+                priority=calculate_priority(base_md5)
+            )
+            self.task_queue.enqueue(task)
+    
+    def on_patch_generated(self, patch_info: PatchInfo):
+        &quot;&quot;&quot;差分包生成完成时触发&quot;&quot;&quot;
+        # 质量检查
+        if patch_info.size &gt; patch_info.original_size * 0.7:
+            self.mark_as_inefficient(patch_info)
+        else:
+            self.register_patch(patch_info)
+            self.update_manifest(patch_info)
+</code></pre>
+
+<h4>6.2.4 版本管理与回滚模块</h4>
+
+<p><strong>功能</strong>:</p>
+<ul>
+<li>版本历史查询</li>
+<li>版本对比</li>
+<li>一键回滚</li>
+<li>Manifest复用</li>
+</ul>
+<p><strong>回滚流程</strong>:</p>
+<pre><code class="language-go">
+func (s *VersionService) Rollback(targetManifestID string) error {
+    // 1. 验证目标Manifest存在且有效
+    targetManifest, err := s.GetManifest(targetManifestID)
+    if err != nil {
+        return err
+    }
+    
+    // 2. 检查所有引用的PAK是否仍然存在
+    if err := s.validatePakAvailability(targetManifest); err != nil {
+        return fmt.Errorf(&quot;回滚失败: %w&quot;, err)
+    }
+    
+    // 3. 创建回滚快照
+    snapshot := s.createSnapshot(s.getCurrentManifest())
+    
+    // 4. 切换Manifest
+    if err := s.switchManifest(targetManifestID); err != nil {
+        return err
+    }
+    
+    // 5. 触发CDN刷新
+    s.cdnService.Refresh(targetManifest.GetCDNUrls())
+    
+    // 6. 记录回滚日志
+    s.logRollback(targetManifestID, snapshot)
+    
+    return nil
+}
+</code></pre>
+
+<h4>6.2.5 监控告警模块</h4>
+
+<p><strong>监控指标</strong>:</p>
+<ol>
+<li><strong>资源指标</strong>:</li>
+<li>COS存储用量</li>
+<li>CDN流量消耗</li>
+<li>PAK下载成功率</li>
+<li>差分包应用成功率</li>
+</ul>
+<ol>
+<li><strong>业务指标</strong>:</li>
+<li>用户版本分布</li>
+<li>更新完成率</li>
+<li>平均下载时长</li>
+<li>回滚次数</li>
+</ul>
+<ol>
+<li><strong>系统指标</strong>:</li>
+<li>API响应时间</li>
+<li>任务队列积压</li>
+<li>服务可用性</li>
+</ul>
+<p><strong>告警规则</strong>:</p>
+<pre><code class="language-yaml">
+alerts:
+  - name: pak_download_failure_rate_high
+    condition: pak_download_failure_rate &gt; 0.05
+    duration: 5m
+    severity: critical
+    action: notify_oncall
+    
+  - name: manifest_publish_failed
+    condition: manifest_publish_status == &quot;failed&quot;
+    severity: critical
+    action: notify_oncall
+    
+  - name: cos_storage_usage_high
+    condition: cos_storage_usage &gt; 0.8
+    duration: 1h
+    severity: warning
+    action: notify_admin
+</code></pre>
+
+<h3>6.3 数据库设计</h3>
+
+<h4>6.3.1 核心表结构</h4>
+
+<pre><code class="language-sql">
+-- PAK注册表（增加平台字段）
+CREATE TABLE pak_registry (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    pak_md5 VARCHAR(64),
+    platform VARCHAR(20),              -- 平台标识
+    pak_name VARCHAR(255) NOT NULL,
+    pak_size BIGINT NOT NULL,
+    compressed_size BIGINT,
+    cos_url VARCHAR(512) NOT NULL,
+    cdn_url VARCHAR(512),
+    upload_time DATETIME NOT NULL,
+    last_access_time DATETIME,
+    download_count BIGINT DEFAULT 0,
+    status ENUM(&#39;active&#39;, &#39;deprecated&#39;, &#39;deleted&#39;) DEFAULT &#39;active&#39;,
+    
+    PRIMARY KEY (pak_md5, platform),   -- 联合主键
+    INDEX idx_platform (platform),
+    INDEX idx_status (status),
+    INDEX idx_upload_time (upload_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 差分包注册表（增加平台字段）
+CREATE TABLE patch_registry (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    patch_id VARCHAR(64) UNIQUE NOT NULL,
+    platform VARCHAR(20),              -- 平台标识
+    from_pak_md5 VARCHAR(64) NOT NULL,
+    to_pak_md5 VARCHAR(64) NOT NULL,
+    patch_size BIGINT NOT NULL,
+    compression_ratio DECIMAL(5,4),
+    cos_url VARCHAR(512) NOT NULL,
+    created_at DATETIME NOT NULL,
+    status ENUM(&#39;active&#39;, &#39;deprecated&#39;, &#39;deleted&#39;) DEFAULT &#39;active&#39;,
+    download_count BIGINT DEFAULT 0,
+    success_count BIGINT DEFAULT 0,
+    
+    PRIMARY KEY (patch_id, platform),  -- 联合主键
+    INDEX idx_platform (platform),
+    INDEX idx_from_to (from_pak_md5, to_pak_md5, platform),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- MOD Manifest索引表（增加平台字段）
+CREATE TABLE mod_manifest_index (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    mod_manifest_id VARCHAR(128) UNIQUE NOT NULL,
+    mod_id VARCHAR(64) NOT NULL,
+    mod_version VARCHAR(32) NOT NULL,
+    platform VARCHAR(20),              -- 平台标识
+    content_hash VARCHAR(64),
+    cos_url VARCHAR(512) NOT NULL,
+    created_at DATETIME NOT NULL,
+    
+    INDEX idx_mod_platform (mod_id, platform, mod_version),
+    UNIQUE KEY uk_mod_version_platform (mod_id, mod_version, platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- APP Manifest索引表（包含所有平台）
+CREATE TABLE app_manifest_index (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    manifest_id VARCHAR(128) UNIQUE NOT NULL,
+    app_version VARCHAR(32) NOT NULL,
+    environment ENUM(&#39;test&#39;, &#39;preview&#39;, &#39;prod&#39;) NOT NULL,
+    platforms JSON,                    -- 包含的平台列表 [&quot;ios&quot;, &quot;android&quot;, ...]
+    cos_url VARCHAR(512) NOT NULL,
+    created_at DATETIME NOT NULL,
+    published_at DATETIME,
+    status ENUM(&#39;draft&#39;, &#39;testing&#39;, &#39;published&#39;, &#39;deprecated&#39;) DEFAULT &#39;draft&#39;,
+    creator VARCHAR(64),
+    
+    INDEX idx_app_env (app_version, environment),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Manifest表（保留原有结构，用于详细信息）
+CREATE TABLE manifests (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    manifest_id VARCHAR(64) UNIQUE NOT NULL,
+    app_version VARCHAR(32) NOT NULL,
+    manifest_version VARCHAR(64) NOT NULL,
+    parent_manifest_id VARCHAR(64),
+    is_full BOOLEAN DEFAULT FALSE,
+    manifest_json TEXT NOT NULL,
+    signature VARCHAR(512),
+    created_at DATETIME NOT NULL,
+    published_at DATETIME,
+    status ENUM(&#39;draft&#39;, &#39;testing&#39;, &#39;published&#39;, &#39;deprecated&#39;) DEFAULT &#39;draft&#39;,
+    environment ENUM(&#39;test&#39;, &#39;preview&#39;, &#39;prod&#39;) NOT NULL,
+    creator VARCHAR(64),
+    INDEX idx_app_version (app_version),
+    INDEX idx_status (status),
+    INDEX idx_env (environment)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- MOD版本表
+CREATE TABLE mod_versions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    mod_id VARCHAR(64) NOT NULL,
+    mod_name VARCHAR(255) NOT NULL,
+    mod_version VARCHAR(32) NOT NULL,
+    manifest_id VARCHAR(64) NOT NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_mod_id (mod_id),
+    INDEX idx_manifest (manifest_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 版本历史表
+CREATE TABLE version_history (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    manifest_id VARCHAR(64) NOT NULL,
+    action ENUM(&#39;create&#39;, &#39;publish&#39;, &#39;rollback&#39;, &#39;deprecate&#39;) NOT NULL,
+    operator VARCHAR(64),
+    reason TEXT,
+    created_at DATETIME NOT NULL,
+    INDEX idx_manifest (manifest_id),
+    INDEX idx_action (action)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 清理日志表
+CREATE TABLE cleanup_logs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    cleanup_id VARCHAR(64) UNIQUE NOT NULL,
+    resource_type ENUM(&#39;pak&#39;, &#39;patch&#39;, &#39;manifest&#39;) NOT NULL,
+    resource_count INT NOT NULL,
+    freed_size BIGINT,
+    executed_at DATETIME NOT NULL,
+    operator VARCHAR(64),
+    status ENUM(&#39;success&#39;, &#39;failed&#39;, &#39;partial&#39;) NOT NULL,
+    details TEXT,
+    INDEX idx_executed_at (executed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+</code></pre>
+
+<h3>6.4 管理后台功能清单</h3>
+
+<h4>6.4.1 资源管理页面</h4>
+<ul>
+<li>PAK文件列表与搜索</li>
+<li>PAK上传与删除</li>
+<li>PAK引用关系查看</li>
+<li>差分包列表与状态</li>
+</ul>
+<h4>6.4.2 版本管理页面</h4>
+<ul>
+<li>Manifest列表与搜索</li>
+<li>创建新Manifest</li>
+<li>Manifest对比工具</li>
+<li>版本发布流程</li>
+<li>回滚操作</li>
+</ul>
+<h4>6.4.3 MOD管理页面</h4>
+<ul>
+<li>MOD列表与配置</li>
+<li>MOD依赖关系图</li>
+<li>MOD独立更新</li>
+<li>MOD版本历史</li>
+</ul>
+<h4>6.4.4 监控大盘</h4>
+<ul>
+<li>实时监控指标</li>
+<li>用户版本分布图</li>
+<li>资源使用趋势</li>
+<li>告警历史</li>
+</ul>
+<h4>6.4.5 运维工具</h4>
+<ul>
+<li>资源清理工具</li>
+<li>批量操作工具</li>
+<li>日志查询</li>
+<li>审计日志</li>
+</ul>
+<hr>
+
+<h2>七、完整数据流转链路</h2>
+
+<h3>7.1 资源构建与发布流程</h3>
+
+<pre><code class="language-mermaid">
+sequenceDiagram
+    participant Build as 构建系统
+    participant Upload as 上传服务
+    participant COS as COS存储
+    participant Manifest as Manifest服务
+    participant Patch as 差分包服务
+    participant CDN as CDN
+    participant Client as 客户端
+    
+    Build-&gt;&gt;Upload: 1. 提交PAK文件
+    Upload-&gt;&gt;Upload: 2. 计算MD5
+    Upload-&gt;&gt;COS: 3. 检查文件是否存在
+    alt 文件不存在
+        Upload-&gt;&gt;COS: 4. 上传PAK到Pool
+    end
+    Upload-&gt;&gt;Manifest: 5. 更新PAK注册表
+    Upload-&gt;&gt;Patch: 6. 触发差分包生成
+    Patch-&gt;&gt;COS: 7. 生成并上传差分包
+    Manifest-&gt;&gt;Manifest: 8. 构建Manifest
+    Manifest-&gt;&gt;Manifest: 9. 签名Manifest
+    Manifest-&gt;&gt;COS: 10. 上传Manifest
+    Manifest-&gt;&gt;CDN: 11. 触发CDN预热
+    Client-&gt;&gt;CDN: 12. 请求Manifest
+    CDN-&gt;&gt;Client: 13. 返回Manifest
+    Client-&gt;&gt;CDN: 14. 下载PAK/差分包
+    CDN-&gt;&gt;Client: 15. 返回资源
+</code></pre>
+
+<h3>7.2 客户端更新流程</h3>
+
+<pre><code class="language-mermaid">
+graph TD
+    A[启动游戏] --&gt; B[请求最新Manifest]
+    B --&gt; C[对比本地版本]
+    C --&gt; D{需要更新?}
+    D --&gt;|否| E[进入游戏]
+    D --&gt;|是| F[计算更新内容]
+    F --&gt; G{有差分包?}
+    G --&gt;|是| H[下载差分包]
+    G --&gt;|否| I[下载完整PAK]
+    H --&gt; J[应用差分包]
+    J --&gt; K{应用成功?}
+    K --&gt;|是| L[验证MD5]
+    K --&gt;|否| I
+    I --&gt; L
+    L --&gt; M{验证通过?}
+    M --&gt;|是| N[更新本地Manifest]
+    M --&gt;|否| O[重试/降级]
+    N --&gt; P{所有PAK更新完成?}
+    P --&gt;|否| F
+    P --&gt;|是| E
+</code></pre>
+
+<hr>
+
+<h2>八、关键技术细节</h2>
+
+<h3>8.1 MD5分片策略</h3>
+
+<p><strong>为什么使用MD5前2位分片？</strong></p>
+<ul>
+<li>5000个PAK文件，均匀分布到256个目录（16^2）</li>
+<li>每个目录约20个文件，避免单目录文件过多</li>
+<li>便于COS的性能优化和并发访问</li>
+</ul>
+<h3>8.2 版本号规则详解</h3>
+
+<h4>8.2.1 底包版本号（App Version）</h4>
+
+<p><strong>格式</strong>: <code>A.B.C</code>（3位语义化版本）</p>
+<ul>
+<li><strong>A (Major)</strong>: 大版本，破坏性变更（如引擎升级、架构重构）</li>
+<li><strong>B (Minor)</strong>: 功能版本，新增功能（如新玩法、新系统）</li>
+<li><strong>C (Patch)</strong>: 修复版本，Bug修复和小优化</li>
+</ul>
+<p><strong>示例</strong>:</p>
+<ul>
+<li><code>1.0.0</code>: 首个正式版本</li>
+<li><code>1.1.0</code>: 新增社交系统</li>
+<li><code>1.1.1</code>: 修复社交系统Bug</li>
+<li><code>2.0.0</code>: 引擎升级到UE5</li>
+</ul>
+<p><strong>变更频率</strong>: 约2个月一次（可上下浮动）</p>
+
+<h4>8.2.2 Base资源版本号（Base Version）⭐</h4>
+
+<p><strong>格式</strong>: <code>A.B.C.x</code>（4位版本号）</p>
+<ul>
+<li><strong>A.B.C</strong>: 对应的底包版本（前3位必须匹配）</li>
+<li><strong>x</strong>: Base资源热更新序号（从1开始递增）</li>
+</ul>
+<p><strong>示例</strong>:</p>
+<pre><code class="language-">
+底包 1.0.0:
+  → Base 1.0.0.1 (首次Base资源)
+  → Base 1.0.0.2 (修复材质Bug)
+  → Base 1.0.0.3 (优化粒子效果)
+
+底包 1.1.0:
+  → Base 1.1.0.1 (新玩法Base资源)
+  → Base 1.1.0.2 (新增共享资源)
+</code></pre>
+
+<p><strong>规则</strong>:</p>
+<ol>
+<li>Base资源版本的前3位必须与底包版本一致</li>
+<li>第4位从1开始，每次Base资源更新递增</li>
+<li>不同底包版本的Base资源版本号独立计数</li>
+</ol>
+<p><strong>变更频率</strong>: 每周或每月（根据需求）</p>
+
+<h4>8.2.3 MOD版本号（MOD Version）⭐</h4>
+
+<p><strong>格式</strong>: <code>W.X.Y.Z</code>（4位版本号）</p>
+<ul>
+<li><strong>W.X.Y.Z</strong>: MOD独立的4位版本号，不强制与底包版本号关联</li>
+<li>每个MOD自行管理版本号递增规则（建议采用语义化版本规范）</li>
+</ul>
+<p><strong>版本号规则</strong>:</p>
+<ol>
+<li>MOD版本号独立管理，不需要与底包版本号保持一致</li>
+<li>建议采用语义化版本规范：</li>
+<li><strong>W（主版本号）</strong>: 重大功能变更或不兼容更新</li>
+<li><strong>X（次版本号）</strong>: 新增功能，向后兼容</li>
+<li><strong>Y（修订号）</strong>: Bug修复，向后兼容</li>
+<li><strong>Z（构建号）</strong>: 小修改或热修复</li>
+<li>每个二进制版本有独立的Manifest，不考虑跨二进制版本兼容 ⭐</li>
+</ol>
+<p><strong>示例</strong>:</p>
+<pre><code class="language-">
+底包 1.0.0:
+  → MOD A 1.0.0.1 (首次发布)
+  → MOD A 1.0.0.2 (Bug修复，递增版本号)
+  → MOD A 1.0.0.3 (新增内容，递增版本号)
+
+底包 1.1.0:
+  → MOD A 1.1.0.1 (新底包下的首次发布，重新开始版本号)
+  → MOD A 1.1.0.3 (Bug修复)
+</code></pre>
+
+<p><strong>依赖声明示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;mod_version&quot;: &quot;1.0.0.1&quot;,  // MOD独立的4位版本号
+  &quot;dependencies&quot;: {
+    &quot;platform_base&quot;: {
+      &quot;app_version&quot;: &quot;1.0.0&quot;,              // 依赖的底包版本（必须匹配）⭐
+      &quot;min_base_version&quot;: &quot;1.0.0.1&quot;,       // 最低兼容Base版本
+      &quot;max_base_version&quot;: &quot;1.0.0.5&quot;        // 最高兼容Base版本
+    }
+  }
+}
+</code></pre>
+
+<p><strong>优势</strong>:</p>
+<ul>
+<li>✅ 简化版本管理：MOD版本号独立，不受底包版本号约束</li>
+<li>✅ 清晰的依赖关系：通过<code>app_version</code>明确依赖的底包版本</li>
+<li>✅ 避免跨版本混淆：每个二进制版本有独立的Manifest</li>
+<li>✅ 灵活的版本策略：MOD可以自行决定版本号递增规则</li>
+</ul>
+<h4>8.2.4 版本兼容性检查算法</h4>
+
+<pre><code class="language-go">
+func CheckVersionCompatibility(
+    mod *ModManifest,
+    base *BaseManifest,
+) error {
+    dep := mod.Dependencies.PlatformBase
+    
+    // 检查1：底包版本必须匹配 ⭐
+    if base.AppVersion != dep.AppVersion {
+        return fmt.Errorf(
+            &quot;底包版本不匹配: MOD需要 %s, 实际 %s&quot;,
+            dep.AppVersion,
+            base.AppVersion,
+        )
+    }
+    
+    // 检查2：Base版本范围
+    if !IsVersionInRange(
+        base.BaseVersion,
+        dep.MinBaseVersion,
+        dep.MaxBaseVersion,
+    ) {
+        return fmt.Errorf(
+            &quot;Base版本不兼容: 需要 %s-%s, 实际 %s&quot;,
+            dep.MinBaseVersion,
+            dep.MaxBaseVersion,
+            base.BaseVersion,
+        )
+    }
+    
+    return nil
+}
+
+// 从Base版本提取底包版本
+func ExtractAppVersion(baseVersion string) string {
+    // &quot;1.0.0.5&quot; → &quot;1.0.0&quot;
+    parts := strings.Split(baseVersion, &quot;.&quot;)
+    if len(parts) == 4 {
+        return strings.Join(parts[:3], &quot;.&quot;)
+    }
+    return baseVersion
+}
+</code></pre>
+
+<h4>8.2.5 版本号最佳实践</h4>
+
+<table>
+<thead><tr>
+<th>场景</th>
+<th>推荐做法</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><strong>Base资源Bug修复</strong></td>
+<td>递增第4位：1.0.0.1 → 1.0.0.2</td>
+</tr>
+<tr>
+<td><strong>Base资源新增内容</strong></td>
+<td>递增第4位：1.0.0.2 → 1.0.0.3</td>
+</tr>
+<tr>
+<td><strong>Base有破坏性变化</strong></td>
+<td>设置<code>has<em>breaking</em>changes: true</code>，提示MOD开发者 ⭐</td>
+</tr>
+<tr>
+<td><strong>底包大版本更新</strong></td>
+<td>重置Base版本：1.0.0.x → 2.0.0.1</td>
+</tr>
+<tr>
+<td><strong>MOD独立更新</strong></td>
+<td>递增版本号：1.0.0.1 → 1.0.0.2 ⭐</td>
+</tr>
+<tr>
+<td><strong>MOD适配新底包</strong></td>
+<td>创建新Manifest，版本号重新开始：1.1.0.1 ⭐</td>
+</tr>
+</tbody></table>
+
+<h3>8.3 差分包大小阈值</h3>
+
+<p><strong>参考iWiki文档的20M-1000M阈值</strong>:</p>
+<ul>
+<li><strong>< 20M</strong>: 不生成差分包，直接全量下载</li>
+<li><strong>20M - 1000M</strong>: 生成差分包</li>
+<li><strong>> 1000M</strong>: 评估差分包效果，可能拆分PAK</li>
+</ul>
+<p><strong>优化建议</strong>:</p>
+<ul>
+<li>根据实际数据调整阈值</li>
+<li>考虑网络环境（WiFi vs 4G）动态调整</li>
+</ul>
+<h3>8.4 签名与防篡改</h3>
+
+<p><strong>Manifest签名</strong>:</p>
+<pre><code class="language-go">
+func SignManifest(manifest *Manifest, privateKey *rsa.PrivateKey) (string, error) {
+    // 1. 序列化Manifest（排除signature字段）
+    data, _ := json.Marshal(manifest)
+    
+    // 2. 计算SHA256哈希
+    hash := sha256.Sum256(data)
+    
+    // 3. RSA签名
+    signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hash[:])
+    if err != nil {
+        return &quot;&quot;, err
+    }
+    
+    // 4. Base64编码
+    return base64.StdEncoding.EncodeToString(signature), nil
+}
+</code></pre>
+
+<p><strong>客户端验证</strong>:</p>
+<pre><code class="language-cpp">
+bool VerifyManifest(const FString&amp; ManifestJson, const FString&amp; Signature) {
+    // 1. 解析公钥
+    // 2. Base64解码签名
+    // 3. 计算Manifest的SHA256
+    // 4. RSA验证签名
+    return RSAVerify(PublicKey, Hash, Signature);
+}
+</code></pre>
+
+<hr>
+
+<h2>九、风险与应对</h2>
+
+<h3>9.1 技术风险</h3>
+
+<table>
+<thead><tr>
+<th>风险</th>
+<th>影响</th>
+<th>概率</th>
+<th>应对措施</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>COS故障导致资源不可用</td>
+<td>高</td>
+<td>低</td>
+<td>1. 多地域容灾<br>2. 本地缓存<br>3. 降级到底包资源</td>
+</tr>
+<tr>
+<td>差分包应用失败</td>
+<td>中</td>
+<td>中</td>
+<td>1. 自动降级全量下载<br>2. 差分包质量检查<br>3. 客户端重试机制</td>
+</tr>
+<tr>
+<td>Manifest冲突导致游戏崩溃</td>
+<td>高</td>
+<td>低</td>
+<td>1. 严格的依赖检查<br>2. 环境隔离测试<br>3. 快速回滚能力</td>
+</tr>
+<tr>
+<td>存储成本超预算</td>
+<td>中</td>
+<td>中</td>
+<td>1. 自动化清理<br>2. 分层存储<br>3. 成本监控告警</td>
+</tr>
+</tbody></table>
+
+<h3>9.2 业务风险</h3>
+
+<table>
+<thead><tr>
+<th>风险</th>
+<th>影响</th>
+<th>概率</th>
+<th>应对措施</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>更新失败率高影响用户体验</td>
+<td>高</td>
+<td>中</td>
+<td>1. 多重降级策略<br>2. 断点续传<br>3. 网络环境检测</td>
+</tr>
+<tr>
+<td>回滚操作失误</td>
+<td>高</td>
+<td>低</td>
+<td>1. 回滚前快照<br>2. 二次确认机制<br>3. 审计日志</td>
+</tr>
+<tr>
+<td>MOD依赖关系复杂导致管理困难</td>
+<td>中</td>
+<td>高</td>
+<td>1. 可视化依赖图<br>2. 自动化冲突检测<br>3. 版本锁定机制</td>
+</tr>
+<tr>
+<td>差分包生成耗时过长</td>
+<td>中</td>
+<td>中</td>
+<td>1. 异步生成模式<br>2. 告警阈值配置<br>3. 优先级队列调度</td>
+</tr>
+</tbody></table>
+
+<hr>
+
+<h2>十、实施计划建议</h2>
+
+<h3>10.1 分阶段实施</h3>
+
+<p><strong>Phase 1: 基础设施</strong></p>
+<ul>
+<li>COS目录结构搭建</li>
+<li>基础数据库表设计</li>
+<li>PAK上传服务开发</li>
+</ul>
+<p><strong>Phase 2: 核心服务</strong></p>
+<ul>
+<li>Manifest生成与管理服务</li>
+<li>差分包生成服务</li>
+<li>版本管理服务</li>
+</ul>
+<p><strong>Phase 3: 管理后台</strong></p>
+<ul>
+<li>管理后台UI开发</li>
+<li>监控大盘</li>
+<li>运维工具</li>
+</ul>
+<p><strong>Phase 4: 高级功能</strong></p>
+<ul>
+<li>资源清理服务</li>
+<li>Manifest复用功能</li>
+<li>性能优化</li>
+</ul>
+<p><strong>Phase 5: 测试与上线</strong></p>
+<ul>
+<li>集成测试</li>
+<li>压力测试</li>
+<li>灰度上线</li>
+</ul>
+<h3>10.2 技术栈建议</h3>
+
+<p><strong>后端</strong>:</p>
+<ul>
+<li>语言: Go（高性能、并发友好）</li>
+<li>框架: Gin/Echo</li>
+<li>数据库: MySQL 8.0</li>
+<li>缓存: Redis 6.0</li>
+<li>消息队列: RabbitMQ/Kafka</li>
+</ul>
+<p><strong>前端</strong>:</p>
+<ul>
+<li>框架: Vue 3 + TypeScript</li>
+<li>UI库: Element Plus</li>
+<li>图表: ECharts</li>
+</ul>
+<p><strong>运维</strong>:</p>
+<ul>
+<li>容器化: Docker + Kubernetes</li>
+<li>监控: Prometheus + Grafana</li>
+<li>日志: ELK Stack</li>
+</ul>
+<hr>
+
+<h2>十一、总结</h2>
+
+<p>本方案基于UE4游戏平台的实际需求，设计了一套完整的基于COS的PAK资源管理系统。核心特点包括：</p>
+
+<ol>
+<li><strong>高效存储</strong>: 基于MD5的内容寻址，避免重复上传，支持跨版本复用</li>
+<li><strong>灵活更新</strong>: 支持MOD独立更新，差分包智能生成，多重降级策略</li>
+<li><strong>安全可靠</strong>: 三环境隔离，Manifest签名，快速回滚能力</li>
+<li><strong>成本可控</strong>: 自动化清理，分层存储，成本监控告警</li>
+<li><strong>易于运维</strong>: 完整的管理后台，可视化监控，审计日志</li>
+</ol>
+<p>该方案在参考iWiki文档的基础上，针对5000+ PAK文件、多MOD、多环境的复杂场景进行了深度优化，是一套务实可行的技术方案。</p>
+
+<hr>
+
+<p><strong>附录</strong>:</p>
+<ul>
+<li>A. API接口详细文档</li>
+<li>B. 数据库完整DDL</li>
+<li>C. 客户端集成指南</li>
+<li>D. 运维手册</li>
+</ul>
+<hr>
+
+<p><strong>文档状态</strong>: 待评审  </p>
+<p><strong>下一步</strong>: 技术评审会议，确认方案细节</p>
+        </div>
+    </div>
+
+    <!-- Mermaid.js 图表渲染库 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // 初始化 Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true
+            },
+            gantt: {
+                useMaxWidth: true
+            }
+        });
+
+        // 页面加载完成后，将所有 language-mermaid 的代码块转换为 mermaid 渲染
+        document.addEventListener('DOMContentLoaded', function() {
+            // 查找所有 class="language-mermaid" 的 code 元素
+            const mermaidBlocks = document.querySelectorAll('code.language-mermaid');
+            
+            mermaidBlocks.forEach((block, index) => {
+                // 获取 Mermaid 代码内容
+                const code = block.textContent;
+                
+                // 创建新的 div 元素用于渲染 Mermaid 图表
+                const mermaidDiv = document.createElement('div');
+                mermaidDiv.className = 'mermaid';
+                mermaidDiv.textContent = code;
+                mermaidDiv.style.backgroundColor = '#f8f9fa';
+                mermaidDiv.style.padding = '20px';
+                mermaidDiv.style.borderRadius = '8px';
+                mermaidDiv.style.margin = '20px 0';
+                mermaidDiv.style.textAlign = 'center';
+                
+                // 替换原来的 pre > code 结构
+                const preElement = block.parentElement;
+                preElement.parentNode.replaceChild(mermaidDiv, preElement);
+            });
+
+            // 重新渲染所有 Mermaid 图表
+            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+        });
+    </script>
+</body>
+</html>
