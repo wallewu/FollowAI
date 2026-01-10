@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离散化公共资产仓库技术方案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            font-size: 2em;
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            font-size: 1.5em;
+            color: #764ba2;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+        
+        h5 {
+            font-size: 1.1em;
+            color: #764ba2;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        h6 {
+            font-size: 1em;
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffecb3 100%);
+            border-left: 4px solid #ff6b35;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        /* Success Box */
+        .success-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid #2e7d32;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #e8eaf6;
+            transition: all 0.3s ease;
+        }
+        
+        /* Code Blocks */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        pre code {
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre;
+            display: block;
+        }
+        
+        /* Inline Code */
+        code {
+            background: #f4f4f4;
+            color: #e83e8c;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background: transparent;
+            color: #f8f8f2;
+            padding: 0;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+            color: #333;
+        }
+        
+        ul li::marker {
+            color: #667eea;
+        }
+        
+        ol li::marker {
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        /* Links */
+        a {
+            color: #667eea;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        /* Horizontal Rule */
+        hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 30px 0;
+        }
+        
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Strong and Emphasis */
+        strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        em {
+            color: #764ba2;
+            font-style: italic;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 1.6em;
+            }
+            
+            h3 {
+                font-size: 1.3em;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>离散化公共资产仓库技术方案</h1>
+            <div class="subtitle">版本 v2.2 - 完整设计文档</div>
+        </div>
+        <div class="content">
+<h1>离散化公共资产仓库技术方案</h1>
+
+<p><strong>文档版本</strong>: v1.0  </p>
+<p><strong>最后更新</strong>: 2026-01-10  </p>
+<p><strong>基于</strong>: 元梦之星平台化基础架构 + UE4 PAK资源管理技术方案  </p>
+<p><strong>状态</strong>: 设计完成，待实施  </p>
+<p><strong>整合文档</strong>: 发布流程设计 + MountPoint注册管理功能设计</p>
+
+<hr>
+
+<h2>目录</h2>
+
+<ol>
+<li><a href="#1-核心目标与设计理念">核心目标与设计理念</a></li>
+<li><a href="#2-资产组织模型">资产组织模型</a></li>
+<li><a href="#3-版本管理与git策略">版本管理与Git策略</a></li>
+<li><a href="#4-核心工作流程">核心工作流程</a></li>
+<li><a href="#5-依赖管理方案">依赖管理方案</a></li>
+<li><a href="#6-cos存储结构">COS存储结构</a></li>
+<li><a href="#7-数据库设计">数据库设计</a></li>
+<li><a href="#8-管理端功能设计">管理端功能设计</a></li>
+<li><a href="#9-资源管理服务器api接口设计">资源管理服务器API接口设计</a></li>
+<li><a href="#10-关键技术问题与解决方案">关键技术问题与解决方案</a></li>
+<li><a href="#11-实施路线图">实施路线图</a></li>
+<li><a href="#12-风险与应对">风险与应对</a></li>
+<li><a href="#13-总结">总结</a></li>
+</ol>
+<hr>
+
+<h2>核心决策摘要</h2>
+
+<p>本文档整合了多轮讨论的技术决策，以下是关键决策点：</p>
+
+<h3>技术架构决策</h3>
+<ol>
+<li>✅ <strong>资产包粒度</strong>：每个资产包（如HeroWarrior、NPCVillager）是独立Pak，而非整个Scene或Character一个Pak</li>
+<li>✅ <strong>MountPoint策略</strong>：统一到一级目录（/AssetRepo/Scene/），不为每个Pak定义独立MountPoint</li>
+<li>✅ <strong>Pak命名规则</strong>：<code>{PakName}_{MD5}.pak</code>，MD5为Cook后Pak文件的完整哈希值</li>
+<li>✅ <strong>pakmeta存储</strong>：在构建时与其他资源文件一起打包进Pak，作为Pak的普通文件存在</li>
+</ol>
+<h3>版本管理决策</h3>
+<ol>
+<li>✅ <strong>分支策略</strong>：develop分支 + 版本线分支（branch<em>v1.x.0）+ Tag（tag</em>v1.x.x）</li>
+<li>✅ <strong>双线提交</strong>：每次修改产生2个commit，分别提交到版本线分支和develop分支</li>
+<li>✅ <strong>Tag发布</strong>：使用者只能引用Tag版本，不能引用分支</li>
+<li>✅ <strong>版本升级</strong>：发布时才升级版本号，而非每次修改都升级</li>
+</ol>
+<h3>Git权限决策</h3>
+<ol>
+<li>✅ <strong>集中管理</strong>：所有Git操作必须通过管理端执行</li>
+<li>✅ <strong>权限控制</strong>：普通用户无直接Git权限，仅通过管理端提交</li>
+<li>✅ <strong>操作审计</strong>：所有Git操作记录日志，便于追溯</li>
+</ol>
+<h3>发布流程决策</h3>
+<ol>
+<li>✅ <strong>发布审批</strong>：发布需要审批流程</li>
+<li>✅ <strong>COS上传</strong>：上传成功是发布的必要条件，失败则不能发布</li>
+<li>✅ <strong>灰度发布</strong>：支持选择性MOD灰度验证</li>
+<li>✅ <strong>环境隔离</strong>：COS按环境（test/prod/dev）和Tag版本组织</li>
+</ol>
+<h3>MOD集成决策</h3>
+<ol>
+<li>✅ <strong>Manifest管理</strong>：MOD Manifest在管理端填写，支持JSON导入</li>
+<li>✅ <strong>自动生成</strong>：管理端根据公仓版本自动生成完整Manifest（包含MD5和依赖）</li>
+<li>✅ <strong>版本兼容性</strong>：APP大版本强制升级，运营期间智能提醒依赖变更的MOD</li>
+</ol>
+<h3>平台适配决策</h3>
+<ol>
+<li>✅ <strong>平台隔离</strong>：不同平台Cook结果不一致，COS按平台分级存储</li>
+<li>✅ <strong>GUID用途</strong>：GUID仅作为资源管理服务器内部使用，不出现在COS路径中</li>
+</ol>
+<hr>
+
+<h2>1. 核心目标与设计理念</h2>
+
+<h3>1.1 核心目标</h3>
+
+<p>建立以<strong>资产包(Asset Package)</strong>为基本单元的离散化公共资产仓库,实现:</p>
+
+<ol>
+<li><strong>真正的跨MOD资源共享</strong>: 公共资产只维护一份,所有MOD通过引用使用</li>
+<li><strong>细粒度的资源管理</strong>: 以资产包为单位进行版本管理、依赖管理和发布</li>
+<li><strong>按需下载</strong>: MOD只下载实际使用的资产包,避免"为少量资源拉整包"</li>
+<li><strong>统一的资产治理</strong>: 通过资源管理服务器实现全生命周期管理</li>
+</ol>
+<h3>1.2 设计理念</h3>
+
+<ul>
+<li><strong>资产包优先</strong>: 按资产包(如ChinaCastle、ModernCity、HeroWarrior)组织,而非按资源类型(Material/StaticMesh)</li>
+<li><strong>小Pak + 全替换</strong>: 每个资产包是一个独立Pak(如HeroWarrior.pak、NPCVillager.pak),更新时整包替换而非差量Patch</li>
+<li><strong>统一MountPoint</strong>: 按分类统一挂载点(如/AssetRepo/Scene、/AssetRepo/Character),而非每个Pak独立MountPoint</li>
+<li><strong>Meta文件管理依赖</strong>: 依赖信息存储在.pakmeta文件中,在构建时与其他资源文件一起打包进Pak,作为Pak的普通文件存在</li>
+<li><strong>双线提交模式</strong>: 每次资产修改产生2个commit,分别提交到版本线分支和develop分支,确保修改同步</li>
+<li><strong>Tag版本管理</strong>: 使用者只能引用不可变的Tag版本,而非分支,确保版本稳定性</li>
+<li><strong>Git权限集中管理</strong>: 所有Git操作必须通过管理端执行,普通用户无直接Git权限</li>
+</ul>
+<hr>
+
+<h2>2. 资产组织模型</h2>
+
+<h3>2.1 资产包分类维度</h3>
+
+<pre><code class="language-mermaid">
+%%{init: {&#39;theme&#39;:&#39;base&#39;, &#39;themeVariables&#39;: { &#39;primaryColor&#39;:&#39;#e8f5e9&#39;,&#39;primaryTextColor&#39;:&#39;#1b5e20&#39;,&#39;primaryBorderColor&#39;:&#39;#4caf50&#39;,&#39;lineColor&#39;:&#39;#66bb6a&#39;,&#39;secondaryColor&#39;:&#39;#fff3e0&#39;,&#39;tertiaryColor&#39;:&#39;#e1f5fe&#39;,&#39;fontSize&#39;:&#39;14px&#39;}}}%%
+graph TB
+    subgraph &quot;资产包分类维度&quot;
+        A[物理类型] --&gt; A1[场景资产包&lt;br/&gt;ChinaCastle/ModernCity]
+        A --&gt; A2[角色资产包&lt;br/&gt;HeroWarrior/NPCVillager]
+        A --&gt; A3[特效资产包&lt;br/&gt;MagicEffects/WeatherFX]
+        A --&gt; A4[音频资产包&lt;br/&gt;BGMCollection/SFXPack]
+        
+        B[使用频率] --&gt; B1[热门资产&lt;br/&gt;高频使用]
+        B --&gt; B2[普通资产&lt;br/&gt;中频使用]
+        B --&gt; B3[冷门资产&lt;br/&gt;低频使用]
+        
+        C[更新频率] --&gt; C1[稳定资产&lt;br/&gt;很少更新]
+        C --&gt; C2[活跃资产&lt;br/&gt;经常更新]
+        
+        D[平台适配] --&gt; D1[全平台通用]
+        D --&gt; D2[平台特化&lt;br/&gt;iOS/Android/PC]
+    end
+    
+    style A fill:#c8e6c9,stroke:#4caf50,stroke-width:2px
+    style B fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    style C fill:#b3e5fc,stroke:#0288d1,stroke-width:2px
+    style D fill:#f8bbd0,stroke:#c2185b,stroke-width:2px
+</code></pre>
+
+<h3>2.2 资产包目录结构示例</h3>
+
+<pre><code class="language-">
+/AssetRepo                                    # 公共资产仓库根目录
+├── /Scene                                    # 场景类资产包
+│   ├── /ChinaCastle                         # 中国城堡资产包
+│   │   ├── /StaticMesh                      # 静态网格体
+│   │   │   ├── SM_Castle_Wall_01.uasset
+│   │   │   ├── SM_Castle_Tower_01.uasset
+│   │   │   └── SM_Castle_Gate_01.uasset
+│   │   ├── /Material                        # 材质
+│   │   │   ├── M_Castle_Stone.uasset
+│   │   │   ├── M_Castle_Wood.uasset
+│   │   │   └── M_Castle_Roof.uasset
+│   │   ├── /Texture                         # 纹理
+│   │   │   ├── T_Castle_Stone_D.uasset
+│   │   │   ├── T_Castle_Stone_N.uasset
+│   │   │   ├── T_Castle_Wood_D.uasset
+│   │   │   └── T_Castle_Wood_N.uasset
+│   │   ├── /Blueprint                       # 蓝图
+│   │   │   └── BP_Castle_Interactive.uasset
+│   │   └── ChinaCastle.pakmeta             # 资产包元数据文件
+│   │
+│   └── /ModernCity                          # 现代城市资产包
+│       ├── /StaticMesh
+│       ├── /Material
+│       ├── /Texture
+│       └── ModernCity.pakmeta
+│
+├── /Character                                # 角色类资产包
+│   ├── /HeroWarrior                         # 战士英雄资产包
+│   │   ├── /SkeletalMesh
+│   │   │   └── SK_Warrior.uasset
+│   │   ├── /Animation
+│   │   │   ├── Anim_Warrior_Idle.uasset
+│   │   │   ├── Anim_Warrior_Run.uasset
+│   │   │   └── Anim_Warrior_Attack.uasset
+│   │   ├── /Material
+│   │   │   └── M_Warrior_Skin.uasset
+│   │   ├── /Texture
+│   │   │   ├── T_Warrior_D.uasset
+│   │   │   └── T_Warrior_N.uasset
+│   │   └── HeroWarrior.pakmeta
+│   │
+│   └── /NPCVillager                         # 村民NPC资产包
+│       ├── /SkeletalMesh
+│       ├── /Animation
+│       ├── /Material
+│       └── NPCVillager.pakmeta
+│
+├── /Effect                                   # 特效类资产包
+│   ├── /MagicEffects                        # 魔法特效包
+│   │   ├── /Particle
+│   │   ├── /Material
+│   │   ├── /Texture
+│   │   └── MagicEffects.pakmeta
+│   │
+│   └── /WeatherFX                           # 天气特效包
+│       ├── /Particle
+│       ├── /Material
+│       └── WeatherFX.pakmeta
+│
+└── /Audio                                    # 音频类资产包
+    ├── /BGMCollection                       # 背景音乐包
+    │   ├── BGM_Battle_01.uasset
+    │   ├── BGM_Peaceful_01.uasset
+    │   └── BGMCollection.pakmeta
+    │
+    └── /SFXPack                             # 音效包
+        ├── SFX_Footstep.uasset
+        ├── SFX_Sword_Swing.uasset
+        └── SFXPack.pakmeta
+</code></pre>
+
+<h3>2.3 资产包元数据文件格式(.pakmeta)</h3>
+
+<pre><code class="language-json">
+{
+  &quot;pakGUID&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,
+  &quot;pakName&quot;: &quot;ChinaCastle&quot;,
+  &quot;pakMD5&quot;: &quot;a3f5e8d9c2b1f4e6a7d8c9b0e1f2a3b4&quot;,
+  &quot;version&quot;: &quot;v1.2.3&quot;,
+  &quot;category&quot;: &quot;Scene&quot;,
+  &quot;mountPoint&quot;: &quot;/AssetRepo/Scene/&quot;,
+  &quot;description&quot;: &quot;中国风城堡场景资产包，包含城墙、塔楼、大门等建筑元素&quot;,
+  &quot;tags&quot;: [&quot;Scene&quot;, &quot;Castle&quot;, &quot;Chinese&quot;, &quot;Architecture&quot;],
+  &quot;platforms&quot;: [&quot;Win64&quot;, &quot;Android&quot;, &quot;iOS&quot;],
+  &quot;totalSize&quot;: 52428800,
+  &quot;assetCount&quot;: 45,
+  &quot;createdBy&quot;: &quot;zhangsan&quot;,
+  &quot;createdAt&quot;: &quot;2026-01-05 14:00:00&quot;,
+  &quot;updatedAt&quot;: &quot;2026-01-10 10:00:00&quot;,
+  &quot;changeLog&quot;: &quot;优化LOD层级，减少面数30%&quot;,
+  &quot;dependencies&quot;: [
+    {
+      &quot;pakName&quot;: &quot;CommonMaterial&quot;,
+      &quot;pakMD5&quot;: &quot;b2c4d6e8f0a1c3e5d7f9b1a3c5e7d9f1&quot;,
+      &quot;minVersion&quot;: &quot;v1.0.0&quot;,
+      &quot;reason&quot;: &quot;依赖通用石材和木材材质&quot;
+    },
+    {
+      &quot;pakName&quot;: &quot;CommonTexture&quot;,
+      &quot;pakMD5&quot;: &quot;c3d5e7f9a1b3c5d7e9f1a3b5c7d9e1f3&quot;,
+      &quot;minVersion&quot;: &quot;v1.0.0&quot;,
+      &quot;reason&quot;: &quot;依赖通用纹理库&quot;
+    }
+  ],
+  &quot;assets&quot;: [
+    {
+      &quot;path&quot;: &quot;/AssetRepo/Scene/ChinaCastle/StaticMesh/SM_Castle_Wall_01&quot;,
+      &quot;type&quot;: &quot;StaticMesh&quot;,
+      &quot;size&quot;: 2097152
+    },
+    {
+      &quot;path&quot;: &quot;/AssetRepo/Scene/ChinaCastle/Material/M_Castle_Stone&quot;,
+      &quot;type&quot;: &quot;Material&quot;,
+      &quot;size&quot;: 524288
+    }
+  ]
+}
+</code></pre>
+
+<p><strong>关键字段说明</strong>:</p>
+<ul>
+<li><code>pakMD5</code>: Cook后Pak文件的MD5值,用于文件命名和依赖标识</li>
+<li><code>mountPoint</code>: 统一到分类级别(如/AssetRepo/Scene/),而非每个Pak独立路径</li>
+<li><code>dependencies[].pakMD5</code>: 依赖的Pak的MD5值,用于精确定位依赖版本</li>
+</ul>
+<p><strong>存储方式</strong>:</p>
+<ul>
+<li>.pakmeta文件在构建时与其他资源文件(uasset等)一起打包进Pak</li>
+<li>作为Pak的普通文件存在,可以像读取其他资源一样读取</li>
+<li>优势: 结构清晰、易于编辑、支持版本控制、工具友好</li>
+</ul>
+<hr>
+
+<h2>3. 版本管理与Git策略</h2>
+
+<h3>3.1 Git权限控制</h3>
+
+<h4>核心原则</h4>
+<ul>
+<li><strong>所有Git操作必须通过管理端</strong>：管理端后台执行Git命令</li>
+<li><strong>普通用户无直接Git权限</strong>：不允许直接push、merge等操作</li>
+<li><strong>权限分级</strong>：</li>
+<li>普通开发者：通过管理端提交资产修改申请</li>
+<li>审批人：通过管理端审批发布</li>
+<li>系统管理员：管理端后台拥有Git完整权限</li>
+</ul>
+<h4>管理端Git操作封装</h4>
+<pre><code class="language-python">
+class GitOperationService:
+    &quot;&quot;&quot;
+    管理端Git操作服务，封装所有Git命令
+    &quot;&quot;&quot;
+    
+    def create_branch(self, base_branch, new_branch, operator):
+        &quot;&quot;&quot;创建版本线分支&quot;&quot;&quot;
+        if not self.check_permission(operator, &#39;create_branch&#39;):
+            raise PermissionError(&quot;无权限创建分支&quot;)
+        
+        subprocess.run([&#39;git&#39;, &#39;checkout&#39;, base_branch])
+        subprocess.run([&#39;git&#39;, &#39;pull&#39;])
+        subprocess.run([&#39;git&#39;, &#39;checkout&#39;, &#39;-b&#39;, new_branch])
+        subprocess.run([&#39;git&#39;, &#39;push&#39;, &#39;origin&#39;, new_branch])
+        
+        self.log_operation(&#39;create_branch&#39;, operator, new_branch)
+    
+    def create_tag(self, branch, tag_name, operator):
+        &quot;&quot;&quot;创建发布Tag&quot;&quot;&quot;
+        if not self.check_permission(operator, &#39;create_tag&#39;):
+            raise PermissionError(&quot;无权限创建Tag&quot;)
+        
+        subprocess.run([&#39;git&#39;, &#39;checkout&#39;, branch])
+        subprocess.run([&#39;git&#39;, &#39;tag&#39;, tag_name])
+        subprocess.run([&#39;git&#39;, &#39;push&#39;, &#39;origin&#39;, tag_name])
+        
+        self.log_operation(&#39;create_tag&#39;, operator, tag_name)
+    
+    def dual_commit(self, branch, files, commit_message, operator):
+        &quot;&quot;&quot;双线提交：同时提交到版本线分支和develop&quot;&quot;&quot;
+        if not self.check_permission(operator, &#39;commit&#39;):
+            raise PermissionError(&quot;无权限提交代码&quot;)
+        
+        commits = []
+        
+        # 1. 提交到版本线分支
+        subprocess.run([&#39;git&#39;, &#39;checkout&#39;, branch])
+        subprocess.run([&#39;git&#39;, &#39;add&#39;] + files)
+        subprocess.run([&#39;git&#39;, &#39;commit&#39;, &#39;-m&#39;, commit_message])
+        branch_commit = self.get_last_commit_hash()
+        subprocess.run([&#39;git&#39;, &#39;push&#39;, &#39;origin&#39;, branch])
+        commits.append({&#39;branch&#39;: branch, &#39;commit&#39;: branch_commit})
+        
+        # 2. 同步提交到develop分支
+        subprocess.run([&#39;git&#39;, &#39;checkout&#39;, &#39;develop&#39;])
+        subprocess.run([&#39;git&#39;, &#39;add&#39;] + files)
+        subprocess.run([&#39;git&#39;, &#39;commit&#39;, &#39;-m&#39;, commit_message])
+        develop_commit = self.get_last_commit_hash()
+        subprocess.run([&#39;git&#39;, &#39;push&#39;, &#39;origin&#39;, &#39;develop&#39;])
+        commits.append({&#39;branch&#39;: &#39;develop&#39;, &#39;commit&#39;: develop_commit})
+        
+        # 3. 记录操作日志
+        self.log_operation(&#39;dual_commit&#39;, operator, commits)
+        
+        return commits
+</code></pre>
+
+<h3>3.2 分支与Tag策略</h3>
+
+<h4>核心原则</h4>
+<ul>
+<li><strong>develop分支</strong>：主开发分支，持续迭代，不对外发布</li>
+<li><strong>版本线分支</strong>：从develop拉出，作为已发布版本的修复分支，发布后保留</li>
+<li><strong>Tag</strong>：不可变的发布快照，MOD只能引用Tag</li>
+</ul>
+<h4>版本演进示例</h4>
+<pre><code class="language-">
+develop (主开发分支)
+    ↓ 拉出版本线
+branch_v1.0.0
+    ↓ 首次发布
+tag_v1.0.0
+    ↓ 修改资产A、B、C
+tag_v1.0.1
+    ↓ 修改资产G、H、J、K
+tag_v1.0.2
+    ↓ 同步所有修改到develop
+develop (包含v1.0.x所有修复)
+    ↓ 拉出新版本线
+branch_v1.1.0
+    ↓ 首次发布
+tag_v1.1.0
+</code></pre>
+
+<h4>为什么新大版本必须从develop拉出？</h4>
+<ul>
+<li><strong>序列化兼容性</strong>：随着引擎升级，资产序列化格式可能发生变化</li>
+<li><strong>技术债务清理</strong>：develop分支包含所有历史修复和优化</li>
+<li><strong>架构演进</strong>：新版本可能需要重构资产组织结构</li>
+</ul>
+<h4>分支生命周期</h4>
+<ul>
+<li><strong>版本线分支永久保留</strong>：用于历史版本的问题修复和回溯</li>
+<li><strong>develop分支持续演进</strong>：作为所有新版本的基准</li>
+</ul>
+<h3>3.3 版本号规则</h3>
+
+<h4>语义化版本号</h4>
+<pre><code class="language-">
+v{主版本}.{次版本}.{修订版本}
+
+示例：v1.0.3
+</code></pre>
+
+<h4>版本升级规则</h4>
+<table>
+<thead><tr>
+<th>版本类型</th>
+<th>升级条件</th>
+<th>示例</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><strong>主版本</strong></td>
+<td>不兼容的资产修改（如材质系统重构）</td>
+<td>v1.0.3 → v2.0.0</td>
+</tr>
+<tr>
+<td><strong>次版本</strong></td>
+<td>向下兼容的功能性新增（如新增资产包）</td>
+<td>v1.0.3 → v1.1.0</td>
+</tr>
+<tr>
+<td><strong>修订版本</strong></td>
+<td>向下兼容的问题修正（如材质bug修复）</td>
+<td>v1.0.3 → v1.0.4</td>
+</tr>
+</tbody></table>
+
+<h4>管理端校验规则</h4>
+<ul>
+<li>✅ 版本号必须递增</li>
+<li>✅ 主版本升级必须从develop拉出新分支</li>
+<li>✅ 次版本和修订版本在版本线分支上发布</li>
+<li>✅ 修改必须同步回develop（双线提交）</li>
+</ul>
+<hr>
+
+<h2>4. 核心工作流程</h2>
+
+<h3>4.1 资产入库流程</h3>
+
+<pre><code class="language-mermaid">
+%%{init: {&#39;theme&#39;:&#39;base&#39;, &#39;themeVariables&#39;: { &#39;primaryColor&#39;:&#39;#e3f2fd&#39;,&#39;primaryTextColor&#39;:&#39;#0d47a1&#39;,&#39;primaryBorderColor&#39;:&#39;#1976d2&#39;,&#39;lineColor&#39;:&#39;#42a5f5&#39;,&#39;secondaryColor&#39;:&#39;#fff3e0&#39;,&#39;tertiaryColor&#39;:&#39;#f3e5f5&#39;,&#39;fontSize&#39;:&#39;13px&#39;,&#39;fontFamily&#39;:&#39;Arial&#39;}}}%%
+sequenceDiagram
+    participant User as 美术/策划
+    participant Portal as 管理端
+    participant Server as 资源管理服务器
+    participant Tool as 依赖分析工具
+    participant GIT as GIT仓库
+    
+    User-&gt;&gt;Portal: 上传资产包文件夹
+    Portal-&gt;&gt;Server: 创建入库任务
+    Server-&gt;&gt;Tool: 触发依赖分析
+    Tool-&gt;&gt;Tool: 扫描资产包内所有资产
+    Tool-&gt;&gt;Tool: 分析资产间引用关系
+    Tool-&gt;&gt;Tool: 生成PakGUID(新资产包)
+    Tool-&gt;&gt;Tool: 计算依赖闭包
+    Tool-&gt;&gt;Tool: 生成.pakmeta文件
+    Tool-&gt;&gt;Tool: 打包为.pak文件
+    Tool-&gt;&gt;GIT: 提交到develop分支
+    GIT--&gt;&gt;Server: 提交成功
+    Server-&gt;&gt;Server: 更新数据库
+    Server-&gt;&gt;Server: 更新依赖图
+    Server--&gt;&gt;Portal: 入库成功
+    Portal--&gt;&gt;User: 显示入库结果
+</code></pre>
+
+<h3>4.2 资产修改与发布流程</h3>
+
+<h4>完整发布流程图</h4>
+<pre><code class="language-mermaid">
+%%{init: {&#39;theme&#39;:&#39;base&#39;, &#39;themeVariables&#39;: { &#39;primaryColor&#39;:&#39;#e8f5e9&#39;,&#39;primaryTextColor&#39;:&#39;#1b5e20&#39;,&#39;primaryBorderColor&#39;:&#39;#4caf50&#39;,&#39;lineColor&#39;:&#39;#66bb6a&#39;,&#39;secondaryColor&#39;:&#39;#fff9c4&#39;,&#39;tertiaryColor&#39;:&#39;#e1f5fe&#39;,&#39;fontSize&#39;:&#39;13px&#39;,&#39;fontFamily&#39;:&#39;Arial&#39;}}}%%
+graph TD
+    A[开发人员在branch上修改资产] --&gt; B[双线提交到Git]
+    B --&gt; C[管理端：创建发布申请]
+    C --&gt; D[填写发布说明和变更集]
+    D --&gt; E[系统自动计算版本号]
+    E --&gt; F[提交审批]
+    F --&gt; G{审批通过?}
+    G --&gt;|否| H[驳回，修改后重新提交]
+    H --&gt; C
+    G --&gt;|是| I[创建Git Tag]
+    I --&gt; J[触发Cook任务]
+    J --&gt; K{Cook成功?}
+    K --&gt;|否| L[发布失败，通知开发]
+    K --&gt;|是| M[上传到COS]
+    M --&gt; N{COS上传成功?}
+    N --&gt;|否| L
+    N --&gt;|是| O[更新数据库]
+    O --&gt; P{选择灰度发布?}
+    P --&gt;|是| Q[配置灰度MOD列表]
+    P --&gt;|否| R[全量发布]
+    Q --&gt; S[通知影响的MOD]
+    R --&gt; S
+    S --&gt; T[发布完成]
+    
+    style A fill:#e1f5ff
+    style G fill:#fff4e1
+    style K fill:#fff4e1
+    style N fill:#fff4e1
+    style P fill:#fff4e1
+    style T fill:#e1ffe1
+    style L fill:#ffe1e1
+</code></pre>
+
+<h4>阶段1：资产修改（双线提交）</h4>
+<p><strong>执行者</strong>：美术/技术人员通过管理端上传  </p>
+<p><strong>核心机制</strong>：每次资产修改产生2个commit，分别提交到版本线分支和develop分支</p>
+
+<p><strong>操作流程</strong>：</p>
+<pre><code class="language-bash">
+# 管理端自动执行双线提交
+# 1. 提交到版本线分支
+git checkout branch_v1.0.0
+git add AssetRepo/Scene/ChinaCastle/*
+git commit -m &quot;fix: 修复ChinaCastle材质显示问题&quot;
+git push origin branch_v1.0.0
+
+# 2. 同步提交到develop分支
+git checkout develop
+git add AssetRepo/Scene/ChinaCastle/*
+git commit -m &quot;fix: 修复ChinaCastle材质显示问题&quot;
+git push origin develop
+</code></pre>
+
+<p><strong>管理端界面提示</strong>：</p>
+<pre><code class="language-">
+┌─────────────────────────────────────────┐
+│  资产提交确认                           │
+├─────────────────────────────────────────┤
+│  修改资产: ChinaCastle                  │
+│  提交信息: 修复材质显示问题             │
+│                                         │
+│  ✓ 将提交到 branch_v1.0.0               │
+│  ✓ 将同步提交到 develop                 │
+│                                         │
+│  ⚠️ 注意：将产生2个commit               │
+│                                         │
+│  [确认提交]  [取消]                     │
+└─────────────────────────────────────────┘
+</code></pre>
+
+<h4>阶段2：创建发布申请</h4>
+<p><strong>执行者</strong>：管理员  </p>
+<p><strong>操作</strong>：</p>
+<ol>
+<li>选择要发布的资产包</li>
+<li>填写版本号和变更说明</li>
+<li>选择目标环境（dev/test/prod）</li>
+<li>选择是否灰度发布</li>
+<li>提交审批</li>
+</ol>
+<h4>阶段3：Cook并上传COS</h4>
+<p><strong>执行者</strong>：构建服务器  </p>
+<p><strong>操作</strong>：</p>
+<pre><code class="language-bash">
+# 1. Cook资产（pakmeta文件会和其他资源一起打包进Pak）
+RunUAT BuildCookRun \
+  -project=AssetRepo \
+  -platform=iOS+Android+Windows \
+  -cook -pak
+
+# 2. 计算MD5并重命名
+for pak in *.pak; do
+  md5=$(md5sum $pak | cut -d&#39; &#39; -f1)
+  mv $pak ${pak%.pak}_${md5}.pak
+done
+
+# 3. 上传到COS（按Tag版本组织）
+for platform in iOS Android Windows; do
+  cos_path=&quot;/prod/tag_v1.0.3/${platform}/&quot;
+  upload_to_cos $cos_path *.pak
+done
+</code></pre>
+
+<p><strong>COS上传结果</strong>：</p>
+<pre><code class="language-">
+/prod/tag_v1.0.3/iOS/ChinaCastle_a3f5e8d9c2b1f4e6.pak (包含pakmeta)
+/prod/tag_v1.0.3/iOS/HeroWarrior_b7c8d9e0f1a2b3c4.pak (包含pakmeta)
+/prod/tag_v1.0.3/Android/ChinaCastle_b2c3d4e5f6a7b8c9.pak
+/prod/tag_v1.0.3/Android/HeroWarrior_c3d4e5f6a7b8c9d0.pak
+...
+</code></pre>
+
+<h4>阶段4：灰度发布（可选）</h4>
+<p><strong>决策者</strong>：发布人在创建发布申请时选择</p>
+
+<p><strong>灰度流程</strong>：</p>
+<ol>
+<li>选择灰度MOD列表（如选择2-5个MOD进行灰度）</li>
+<li>灰度MOD使用新版本，其他MOD使用旧版本</li>
+<li>监控灰度MOD的崩溃率、加载时间等指标</li>
+<li>验证通过后扩大灰度范围或全量发布</li>
+<li>发现问题可快速回滚灰度MOD</li>
+</ol>
+<p><strong>灰度配置示例</strong>：</p>
+<pre><code class="language-sql">
+-- 版本表中的灰度字段
+UPDATE asset_repo_versions
+SET is_gray_release = TRUE,
+    gray_mod_list = &#39;[&quot;mod_12345&quot;, &quot;mod_67890&quot;]&#39;
+WHERE version = &#39;v1.0.3&#39;;
+</code></pre>
+
+<h4>阶段5：通知影响的MOD</h4>
+<p><strong>通知内容</strong>：</p>
+<pre><code class="language-">
+【公共资产仓库更新通知】
+
+版本: v1.0.3
+发布时间: 2026-01-10 19:00:00
+
+变更资产:
+• ChinaCastle - 修复材质透明度问题
+• HeroWarrior - 优化性能
+
+您的MOD &quot;城堡大冒险&quot; 引用了以下变更资产:
+• ChinaCastle (当前使用v1.0.2)
+
+建议操作:
+1. 在测试环境验证新版本兼容性
+2. 更新MOD的publicRepoVersion为1.0.3
+3. 重新发布MOD
+
+查看详情: https://manage.example.com/versions/v1.0.3
+</code></pre>
+
+<h3>4.3 MOD发布集成</h3>
+
+<h4>MOD Manifest配置（管理端填写）</h4>
+<p><strong>操作界面</strong>：</p>
+<pre><code class="language-">
+┌─────────────────────────────────────────┐
+│  MOD发布配置                             │
+├─────────────────────────────────────────┤
+│  MOD ID: mod_12345                      │
+│  MOD名称: 城堡大冒险                     │
+│                                         │
+│  公仓版本: v1.0.3  [选择版本]           │
+│                                         │
+│  引用资产:                              │
+│  ┌─────────────────────────────────┐   │
+│  │ ☑ ChinaCastle                   │   │
+│  │ ☑ HeroWarrior                   │   │
+│  │ ☐ NPCVillager                   │   │
+│  └─────────────────────────────────┘   │
+│                                         │
+│  [导入JSON]  [生成Manifest]  [发布]    │
+└─────────────────────────────────────────┘
+</code></pre>
+
+<p><strong>JSON导入格式</strong>：</p>
+<pre><code class="language-json">
+{
+    &quot;modId&quot;: &quot;mod_12345&quot;,
+    &quot;modName&quot;: &quot;城堡大冒险&quot;,
+    &quot;publicRepoVersion&quot;: &quot;1.0.3&quot;,
+    &quot;assets&quot;: [&quot;ChinaCastle&quot;, &quot;HeroWarrior&quot;]
+}
+</code></pre>
+
+<h4>管理端生成最终Manifest</h4>
+<p><strong>生成逻辑</strong>：</p>
+<ol>
+<li>根据publicRepoVersion查询数据库获取资产快照</li>
+<li>解析每个资产的MD5、COS路径和依赖关系</li>
+<li>计算完整的依赖闭包</li>
+<li>生成完整的Manifest文件</li>
+</ol>
+<p><strong>最终Manifest</strong>：</p>
+<pre><code class="language-json">
+{
+    &quot;modId&quot;: &quot;mod_12345&quot;,
+    &quot;modName&quot;: &quot;城堡大冒险&quot;,
+    &quot;publicRepoVersion&quot;: &quot;1.0.3&quot;,
+    &quot;assets&quot;: [
+        {
+            &quot;pak&quot;: &quot;ChinaCastle&quot;,
+            &quot;md5&quot;: &quot;a3f5e8d9c2b1f4e6&quot;,
+            &quot;cosPath&quot;: &quot;/prod/tag_v1.0.3/iOS/ChinaCastle_a3f5e8d9c2b1f4e6.pak&quot;,
+            &quot;dependencies&quot;: [
+                {&quot;pak&quot;: &quot;CommonMaterial&quot;, &quot;md5&quot;: &quot;c1d2e3f4a5b6c7d8&quot;}
+            ]
+        },
+        {
+            &quot;pak&quot;: &quot;HeroWarrior&quot;,
+            &quot;md5&quot;: &quot;b7c8d9e0f1a2b3c4&quot;,
+            &quot;cosPath&quot;: &quot;/prod/tag_v1.0.3/iOS/HeroWarrior_b7c8d9e0f1a2b3c4.pak&quot;,
+            &quot;dependencies&quot;: []
+        }
+    ]
+}
+</code></pre>
+
+<h3>4.4 版本兼容性检查</h3>
+
+<h4>核心策略</h4>
+<ol>
+<li><strong>APP大版本发布时</strong>：强制所有MOD升级到最新公仓版本</li>
+<li><strong>大版本运营期间</strong>：</li>
+<li>提醒依赖到修改Pak的MOD评估升级</li>
+<li>未依赖修改Pak的MOD可以"过时但兼容"，无副作用</li>
+</ul>
+<h4>检查逻辑</h4>
+<pre><code class="language-python">
+def check_version_compatibility(mod_version, current_version, app_version_type, mod_dependencies):
+    &quot;&quot;&quot;
+    检查MOD使用的公仓版本是否兼容
+    &quot;&quot;&quot;
+    mod_major, mod_minor, mod_patch = parse_version(mod_version)
+    cur_major, cur_minor, cur_patch = parse_version(current_version)
+    
+    # 主版本不同，不兼容
+    if mod_major != cur_major:
+        return {
+            &quot;compatible&quot;: False,
+            &quot;level&quot;: &quot;major_breaking&quot;,
+            &quot;message&quot;: f&quot;主版本不兼容，必须升级到v{cur_major}.x.x&quot;,
+            &quot;action&quot;: &quot;force_upgrade&quot;
+        }
+    
+    # APP大版本发布时，强制升级
+    if app_version_type == &quot;major_release&quot; and mod_version != current_version:
+        return {
+            &quot;compatible&quot;: False,
+            &quot;level&quot;: &quot;app_major_release&quot;,
+            &quot;message&quot;: f&quot;APP大版本发布，必须升级到v{current_version}&quot;,
+            &quot;action&quot;: &quot;force_upgrade&quot;
+        }
+    
+    # 大版本运营期间
+    if mod_version != current_version:
+        # 检查MOD依赖的Pak是否有变更
+        changed_paks = get_changed_paks_between_versions(mod_version, current_version)
+        affected_paks = set(mod_dependencies) &amp; set(changed_paks)
+        
+        if affected_paks:
+            return {
+                &quot;compatible&quot;: True,
+                &quot;level&quot;: &quot;dependency_changed&quot;,
+                &quot;message&quot;: f&quot;依赖的资产包已更新：{&#39;, &#39;.join(affected_paks)}，建议升级&quot;,
+                &quot;action&quot;: &quot;recommend_upgrade&quot;,
+                &quot;affectedPaks&quot;: list(affected_paks)
+            }
+        else:
+            return {
+                &quot;compatible&quot;: True,
+                &quot;level&quot;: &quot;outdated_but_compatible&quot;,
+                &quot;message&quot;: &quot;依赖资产未变更，可继续使用&quot;,
+                &quot;action&quot;: &quot;optional_upgrade&quot;
+            }
+    
+    return {&quot;compatible&quot;: True, &quot;level&quot;: &quot;up_to_date&quot;, &quot;action&quot;: &quot;none&quot;}
+</code></pre>
+
+<h3>4.5 回滚机制</h3>
+
+<h4>回滚场景</h4>
+<table>
+<thead><tr>
+<th>场景</th>
+<th>回滚策略</th>
+<th>操作</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><strong>Cook失败</strong></td>
+<td>不创建Tag，发布失败</td>
+<td>修复问题后重新发布</td>
+</tr>
+<tr>
+<td><strong>COS上传失败</strong></td>
+<td>删除Tag，发布失败</td>
+<td>修复网络问题后重新发布</td>
+</tr>
+<tr>
+<td><strong>灰度验证失败</strong></td>
+<td>回滚灰度MOD配置</td>
+<td>灰度MOD使用上一个稳定版本</td>
+</tr>
+<tr>
+<td><strong>线上问题</strong></td>
+<td>回滚COS，修复分支</td>
+<td>1. COS切换到上一个Tag<br>2. 修复分支后重新发布</td>
+</tr>
+</tbody></table>
+
+<h4>回滚操作流程</h4>
+<pre><code class="language-mermaid">
+%%{init: {&#39;theme&#39;:&#39;base&#39;, &#39;themeVariables&#39;: { &#39;primaryColor&#39;:&#39;#ffebee&#39;,&#39;primaryTextColor&#39;:&#39;#c62828&#39;,&#39;primaryBorderColor&#39;:&#39;#e53935&#39;,&#39;lineColor&#39;:&#39;#ef5350&#39;,&#39;fontSize&#39;:&#39;13px&#39;}}}%%
+graph TD
+    A[发现线上问题] --&gt; B[管理端触发回滚]
+    B --&gt; C[更新数据库版本状态为deprecated]
+    C --&gt; D[MOD自动切换到上一个稳定版本]
+    D --&gt; E[通知所有MOD开发者]
+    E --&gt; F[在版本线分支上修复问题]
+    F --&gt; G[重新发布新版本]
+    
+    style A fill:#ffe1e1
+    style B fill:#fff4e1
+    style G fill:#e1ffe1
+</code></pre>
+
+<hr>
+
+<h2>5. 依赖管理方案</h2>
+
+<h3>5.1 依赖信息存储方案</h3>
+
+<p><strong>核心设计</strong>: 使用独立的<code>.pakmeta</code>文件存储依赖信息,与资产一起打包到Pak中</p>
+
+<pre><code class="language-">
+ChinaCastle_a3f5e8d9c2b1f4e6a7d8c9b0e1f2a3b4.pak 文件结构:
+├── [Pak Header]
+├── [Asset Data]
+│   ├── ChinaCastle/StaticMesh/SM_Castle_Wall_01.uasset
+│   ├── ChinaCastle/Material/M_Castle_Stone.uasset
+│   ├── ChinaCastle/Texture/T_Castle_Stone_D.uasset
+│   └── ...
+├── [Metadata]
+│   └── ChinaCastle.pakmeta              # 依赖信息文件
+└── [Pak Index]
+</code></pre>
+
+<p><strong>命名规则</strong>: <code>{PakName}_{MD5}.pak</code></p>
+<ul>
+<li>PakName: 资产包名称(如ChinaCastle、HeroWarrior)</li>
+<li>MD5: Cook后Pak文件的MD5值(32位小写十六进制)</li>
+</ul>
+<p><strong>优势</strong>:</p>
+<ol>
+<li><strong>结构清晰</strong>: meta文件是标准JSON格式,易于编辑和版本控制</li>
+<li><strong>工具友好</strong>: 可以在打包前修改meta文件,无需重新Cook资产</li>
+<li><strong>独立管理</strong>: meta文件可以单独提取、查看和验证</li>
+<li><strong>版本控制</strong>: meta文件可以纳入GIT版本管理</li>
+</ol>
+<h3>5.2 依赖闭包计算</h3>
+
+<pre><code class="language-cpp">
+// 伪代码：依赖闭包计算
+class FPakDependencyResolver {
+public:
+    struct FPakMetadata {
+        FString PakGUID;
+        FString PakName;
+        FString Version;
+        FString MountPoint;
+        TArray&lt;FDependencyEntry&gt; Dependencies;
+    };
+    
+    struct FDependencyEntry {
+        FString PakName;      // 依赖的Pak名称
+        FString PakMD5;       // 依赖的Pak的MD5值
+        FString MinVersion;   // 最低版本要求
+        FString Reason;       // 依赖原因
+    };
+    
+    // 从Pak中读取meta文件
+    bool LoadMetadataFromPak(const FString&amp; PakFilePath, FPakMetadata&amp; OutMetadata) {
+        FPakFile PakFile(*PakFilePath);
+        if (!PakFile.IsValid()) {
+            return false;
+        }
+        
+        // 查找.pakmeta文件
+        FString MetaFileName = FPaths::GetBaseFilename(PakFilePath) + TEXT(&quot;.pakmeta&quot;);
+        const FPakEntry* MetaEntry = PakFile.Find(*MetaFileName);
+        
+        if (!MetaEntry) {
+            UE_LOG(LogPak, Warning, TEXT(&quot;No .pakmeta file found in pak: %s&quot;), *PakFilePath);
+            return false;
+        }
+        
+        // 读取meta文件内容
+        TArray&lt;uint8&gt; MetaData;
+        MetaData.SetNum(MetaEntry-&gt;Size);
+        PakFile.Read(MetaData.GetData(), MetaEntry-&gt;Offset, MetaEntry-&gt;Size);
+        
+        // 解析JSON
+        FString JsonString = FString(UTF8_TO_TCHAR(MetaData.GetData()));
+        TSharedPtr&lt;FJsonObject&gt; JsonObject;
+        TSharedRef&lt;TJsonReader&lt;&gt;&gt; Reader = TJsonReaderFactory&lt;&gt;::Create(JsonString);
+        
+        if (!FJsonSerializer::Deserialize(Reader, JsonObject)) {
+            return false;
+        }
+        
+        // 提取元数据
+        OutMetadata.PakGUID = JsonObject-&gt;GetStringField(TEXT(&quot;pakGUID&quot;));
+        OutMetadata.PakName = JsonObject-&gt;GetStringField(TEXT(&quot;pakName&quot;));
+        OutMetadata.Version = JsonObject-&gt;GetStringField(TEXT(&quot;version&quot;));
+        OutMetadata.MountPoint = JsonObject-&gt;GetStringField(TEXT(&quot;mountPoint&quot;));
+        
+        // 提取依赖列表
+        const TArray&lt;TSharedPtr&lt;FJsonValue&gt;&gt;* DepsArray;
+        if (JsonObject-&gt;TryGetArrayField(TEXT(&quot;dependencies&quot;), DepsArray)) {
+            for (const TSharedPtr&lt;FJsonValue&gt;&amp; DepValue : *DepsArray) {
+                TSharedPtr&lt;FJsonObject&gt; DepObj = DepValue-&gt;AsObject();
+                
+                FDependencyEntry Dep;
+                Dep.PakName = DepObj-&gt;GetStringField(TEXT(&quot;pakName&quot;));
+                Dep.PakMD5 = DepObj-&gt;GetStringField(TEXT(&quot;pakMD5&quot;));
+                Dep.MinVersion = DepObj-&gt;GetStringField(TEXT(&quot;minVersion&quot;));
+                Dep.Reason = DepObj-&gt;GetStringField(TEXT(&quot;reason&quot;));
+                
+                OutMetadata.Dependencies.Add(Dep);
+            }
+        }
+        
+        return true;
+    }
+    
+    // 计算依赖闭包
+    TArray&lt;FString&gt; ComputeDependencyClosure(const FString&amp; RootPakGUID) {
+        TArray&lt;FString&gt; Closure;
+        TSet&lt;FString&gt; Visited;
+        TQueue&lt;FString&gt; Queue;
+        
+        Queue.Enqueue(RootPakGUID);
+        Visited.Add(RootPakGUID);
+        
+        while (!Queue.IsEmpty()) {
+            FString CurrentGUID;
+            Queue.Dequeue(CurrentGUID);
+            
+            Closure.Add(CurrentGUID);
+            
+            // 获取当前Pak的元数据
+            FPakMetadata Metadata;
+            if (!GetMetadataByGUID(CurrentGUID, Metadata)) {
+                continue;
+            }
+            
+            // 遍历依赖
+            for (const FDependencyEntry&amp; Dep : Metadata.Dependencies) {
+                // 通过PakName+MD5查找依赖的GUID
+                FString DepGUID = GetGUIDByNameAndMD5(Dep.PakName, Dep.PakMD5);
+                if (!DepGUID.IsEmpty() &amp;&amp; !Visited.Contains(DepGUID)) {
+                    Queue.Enqueue(DepGUID);
+                    Visited.Add(DepGUID);
+                }
+            }
+        }
+        
+        return Closure;
+    }
+    
+    // 检测循环依赖
+    bool DetectCircularDependency(const FString&amp; RootPakGUID, TArray&lt;FString&gt;&amp; OutCycle) {
+        TSet&lt;FString&gt; Visited;
+        TArray&lt;FString&gt; Path;
+        
+        return DFSDetectCycle(RootPakGUID, Visited, Path, OutCycle);
+    }
+    
+private:
+    bool DFSDetectCycle(
+        const FString&amp; CurrentGUID,
+        TSet&lt;FString&gt;&amp; Visited,
+        TArray&lt;FString&gt;&amp; Path,
+        TArray&lt;FString&gt;&amp; OutCycle
+    ) {
+        if (Path.Contains(CurrentGUID)) {
+            // 找到循环
+            int32 CycleStart = Path.Find(CurrentGUID);
+            OutCycle = TArray&lt;FString&gt;(Path.GetData() + CycleStart, Path.Num() - CycleStart);
+            OutCycle.Add(CurrentGUID);
+            return true;
+        }
+        
+        if (Visited.Contains(CurrentGUID)) {
+            return false;
+        }
+        
+        Visited.Add(CurrentGUID);
+        Path.Add(CurrentGUID);
+        
+        FPakMetadata Metadata;
+        if (GetMetadataByGUID(CurrentGUID, Metadata)) {
+            for (const FDependencyEntry&amp; Dep : Metadata.Dependencies) {
+                // 通过PakName+MD5查找依赖的GUID
+                FString DepGUID = GetGUIDByNameAndMD5(Dep.PakName, Dep.PakMD5);
+                if (!DepGUID.IsEmpty() &amp;&amp; DFSDetectCycle(DepGUID, Visited, Path, OutCycle)) {
+                    return true;
+                }
+            }
+        }
+        
+        Path.RemoveAt(Path.Num() - 1);
+        return false;
+    }
+};
+</code></pre>
+
+<h3>5.3 客户端加载逻辑</h3>
+
+<pre><code class="language-cpp">
+// 伪代码：客户端Pak加载器
+class FAssetRepoPakLoader {
+public:
+    // 加载MOD所需的所有Pak
+    bool LoadPaksForMOD(const FString&amp; MODID) {
+        // 1. 从服务器获取MOD的Pak清单
+        TArray&lt;FString&gt; RequiredPakGUIDs = FetchPakListForMOD(MODID);
+        
+        // 2. 计算完整的依赖闭包
+        TSet&lt;FString&gt; AllPakGUIDs;
+        for (const FString&amp; PakGUID : RequiredPakGUIDs) {
+            TArray&lt;FString&gt; Closure = DependencyResolver.ComputeDependencyClosure(PakGUID);
+            AllPakGUIDs.Append(Closure);
+        }
+        
+        // 3. 拓扑排序(确保依赖先加载)
+        TArray&lt;FString&gt; SortedPakGUIDs = TopologicalSort(AllPakGUIDs);
+        
+        // 4. 按顺序加载Pak
+        for (const FString&amp; PakGUID : SortedPakGUIDs) {
+            if (!LoadSinglePak(PakGUID)) {
+                UE_LOG(LogPak, Error, TEXT(&quot;Failed to load pak: %s&quot;), *PakGUID);
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+private:
+    bool LoadSinglePak(const FString&amp; PakGUID) {
+        // 1. 获取Pak元数据
+        FPakMetadata Metadata;
+        if (!DependencyResolver.GetMetadataByGUID(PakGUID, Metadata)) {
+            return false;
+        }
+        
+        // 2. 检查是否已加载
+        if (LoadedPaks.Contains(PakGUID)) {
+            UE_LOG(LogPak, Log, TEXT(&quot;Pak already loaded: %s&quot;), *Metadata.PakName);
+            return true;
+        }
+        
+        // 3. 构建Pak文件路径
+        FString PakFilePath = ConstructPakPath(Metadata.PakName, Metadata.Version);
+        
+        // 4. 挂载Pak
+        FPakPlatformFile* PakPlatform = GetPakPlatformFile();
+        if (PakPlatform) {
+            if (PakPlatform-&gt;Mount(*PakFilePath, 0, *Metadata.MountPoint)) {
+                LoadedPaks.Add(PakGUID);
+                UE_LOG(LogPak, Log, TEXT(&quot;Mounted pak: %s at %s&quot;), 
+                    *Metadata.PakName, *Metadata.MountPoint);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    TArray&lt;FString&gt; TopologicalSort(const TSet&lt;FString&gt;&amp; PakGUIDs) {
+        TArray&lt;FString&gt; Result;
+        TSet&lt;FString&gt; Visited;
+        TSet&lt;FString&gt; InStack;
+        
+        for (const FString&amp; GUID : PakGUIDs) {
+            if (!Visited.Contains(GUID)) {
+                TopologicalSortDFS(GUID, Visited, InStack, Result);
+            }
+        }
+        
+        Algo::Reverse(Result);
+        return Result;
+    }
+    
+    void TopologicalSortDFS(
+        const FString&amp; GUID,
+        TSet&lt;FString&gt;&amp; Visited,
+        TSet&lt;FString&gt;&amp; InStack,
+        TArray&lt;FString&gt;&amp; Result
+    ) {
+        Visited.Add(GUID);
+        InStack.Add(GUID);
+        
+        FPakMetadata Metadata;
+        if (DependencyResolver.GetMetadataByGUID(GUID, Metadata)) {
+            for (const FDependencyEntry&amp; Dep : Metadata.Dependencies) {
+                // 通过PakName+MD5查找依赖的GUID
+                FString DepGUID = DependencyResolver.GetGUIDByNameAndMD5(Dep.PakName, Dep.PakMD5);
+                if (!DepGUID.IsEmpty() &amp;&amp; !Visited.Contains(DepGUID)) {
+                    TopologicalSortDFS(DepGUID, Visited, InStack, Result);
+                }
+            }
+        }
+        
+        InStack.Remove(GUID);
+        Result.Add(GUID);
+    }
+    
+    FPakDependencyResolver DependencyResolver;
+    TSet&lt;FString&gt; LoadedPaks;
+};
+</code></pre>
+
+<hr>
+
+<h2>6. COS存储结构</h2>
+
+<h3>6.1 目录组织</h3>
+
+<p><strong>核心原则</strong>: 按环境和平台隔离,使用Tag版本号组织目录</p>
+
+<pre><code class="language-">
+/COS_Bucket_AssetRepo
+├── /prod                                    # 线上环境
+│   ├── /tag_v1.0.3                         # Tag版本目录
+│   │   ├── /Win64
+│   │   │   ├── ChinaCastle_a3f5e8d9c2b1f4e6.pak
+│   │   │   ├── HeroWarrior_b7c8d9e0f1a2b3c4.pak
+│   │   │   └── ...
+│   │   ├── /Android
+│   │   │   ├── ChinaCastle_b2c3d4e5f6a7b8c9.pak
+│   │   │   └── ...
+│   │   └── /iOS
+│   │       ├── ChinaCastle_c3d4e5f6a7b8c9d0.pak
+│   │       └── ...
+│   ├── /tag_v1.0.4
+│   │   ├── /Win64
+│   │   ├── /Android
+│   │   └── /iOS
+│   └── ...
+├── /test                                    # 测试环境
+│   ├── /tag_v1.1.0-beta
+│   │   ├── /Win64
+│   │   ├── /Android
+│   │   └── /iOS
+│   └── ...
+└── /dev                                     # 开发环境
+    ├── /tag_v1.2.0-alpha
+    │   ├── /Win64
+    │   ├── /Android
+    │   └── /iOS
+    └── ...
+</code></pre>
+
+<p><strong>命名规则说明</strong>:</p>
+<ul>
+<li>Pak文件: <code>{PakName}_{MD5}.pak</code></li>
+<li>pakmeta已打包在Pak内部,不再单独存储</li>
+<li>MD5值为Cook后Pak文件的完整MD5哈希(32位小写十六进制)</li>
+<li>目录按Tag版本组织,便于版本管理和回滚</li>
+</ul>
+<p><strong>设计优势</strong>:</p>
+<ol>
+<li><strong>版本隔离</strong>: 不同Tag版本完全隔离,互不影响</li>
+<li><strong>回滚简单</strong>: 切换Tag即可回滚到历史版本</li>
+<li><strong>并行发布</strong>: 可以同时维护多个版本(如v1.0.x和v1.1.x)</li>
+<li><strong>存储优化</strong>: 相同MD5的Pak在不同Tag间可以共享(通过CDN缓存)</li>
+</ol>
+<h3>6.2 下载URL示例</h3>
+
+<pre><code class="language-">
+# Pak文件
+https://cos.example.com/AssetRepo/prod/tag_v1.0.3/Win64/ChinaCastle_a3f5e8d9c2b1f4e6.pak
+
+# 不同平台的同一资产包
+https://cos.example.com/AssetRepo/prod/tag_v1.0.3/Android/ChinaCastle_b2c3d4e5f6a7b8c9.pak
+https://cos.example.com/AssetRepo/prod/tag_v1.0.3/iOS/ChinaCastle_c3d4e5f6a7b8c9d0.pak
+</code></pre>
+
+<p><strong>URL构建规则</strong>:</p>
+<pre><code class="language-">
+{COS_BASE_URL}/{environment}/{tag_version}/{platform}/{PakName}_{MD5}.pak
+
+参数说明:
+- COS_BASE_URL: COS存储桶基础URL
+- environment: 环境(prod/test/dev)
+- tag_version: Tag版本号(如tag_v1.0.3)
+- platform: 平台(Win64/Android/iOS/PC/Harmony/H5)
+- PakName: 资产包名称
+- MD5: Pak文件的MD5值(不同平台Cook结果不同,MD5也不同)
+</code></pre>
+
+<p><strong>平台差异说明</strong>:</p>
+<ul>
+<li>不同平台的Cook结果不一致,因此同一资产包在不同平台有不同的MD5</li>
+<li>GUID仅作为资源管理服务器内部使用,不出现在COS路径中</li>
+<li>客户端根据自身平台自动选择对应的Pak文件</li>
+</ul>
+<hr>
+
+<h2>7. 数据库设计</h2>
+
+<h3>7.1 核心表结构</h3>
+
+<h4>7.1.1 资产包表(asset_packages)</h4>
+
+<pre><code class="language-sql">
+CREATE TABLE asset_packages (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    pak_guid VARCHAR(64) UNIQUE NOT NULL COMMENT &#39;Pak全局唯一标识&#39;,
+    pak_name VARCHAR(128) NOT NULL COMMENT &#39;资产包名称&#39;,
+    pak_md5 VARCHAR(32) NOT NULL COMMENT &#39;Pak文件MD5值&#39;,
+    category VARCHAR(64) NOT NULL COMMENT &#39;分类(Scene/Character/Effect/Audio)&#39;,
+    version VARCHAR(32) NOT NULL COMMENT &#39;版本号(v1.2.3)&#39;,
+    mount_point VARCHAR(256) NOT NULL COMMENT &#39;挂载点路径(统一到分类级别)&#39;,
+    description TEXT COMMENT &#39;描述&#39;,
+    tags JSON COMMENT &#39;标签数组&#39;,
+    platforms JSON COMMENT &#39;支持的平台&#39;,
+    total_size BIGINT COMMENT &#39;总大小(字节)&#39;,
+    asset_count INT COMMENT &#39;资产数量&#39;,
+    created_by VARCHAR(64) COMMENT &#39;创建人&#39;,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    change_log TEXT COMMENT &#39;变更日志&#39;,
+    status ENUM(&#39;draft&#39;, &#39;published&#39;, &#39;archived&#39;) DEFAULT &#39;draft&#39;,
+    INDEX idx_pak_name (pak_name),
+    INDEX idx_pak_md5 (pak_md5),
+    INDEX idx_category (category),
+    INDEX idx_version (version),
+    INDEX idx_status (status),
+    UNIQUE KEY uk_name_md5 (pak_name, pak_md5)
+) COMMENT=&#39;资产包主表&#39;;
+</code></pre>
+
+<h4>7.1.2 依赖关系表(package_dependencies)</h4>
+
+<pre><code class="language-sql">
+CREATE TABLE package_dependencies (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    source_pak_guid VARCHAR(64) NOT NULL COMMENT &#39;源Pak GUID&#39;,
+    target_pak_guid VARCHAR(64) NOT NULL COMMENT &#39;目标Pak GUID&#39;,
+    target_pak_name VARCHAR(128) NOT NULL COMMENT &#39;目标Pak名称&#39;,
+    target_pak_md5 VARCHAR(32) NOT NULL COMMENT &#39;目标Pak MD5值&#39;,
+    min_version VARCHAR(32) NOT NULL COMMENT &#39;最低版本要求&#39;,
+    reason TEXT COMMENT &#39;依赖原因&#39;,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_dependency (source_pak_guid, target_pak_guid),
+    INDEX idx_source (source_pak_guid),
+    INDEX idx_target (target_pak_guid)
+) COMMENT=&#39;资产包依赖关系表&#39;;
+</code></pre>
+
+<h4>7.1.3 资产清单表(package_assets)</h4>
+
+<pre><code class="language-sql">
+CREATE TABLE package_assets (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    pak_guid VARCHAR(64) NOT NULL COMMENT &#39;所属Pak GUID&#39;,
+    asset_path VARCHAR(512) NOT NULL COMMENT &#39;资产路径&#39;,
+    asset_type VARCHAR(64) NOT NULL COMMENT &#39;资产类型&#39;,
+    asset_size BIGINT COMMENT &#39;资产大小(字节)&#39;,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_pak_guid (pak_guid),
+    INDEX idx_asset_type (asset_type)
+) COMMENT=&#39;资产包内资产清单&#39;;
+</code></pre>
+
+<h4>7.1.4 版本历史表(package_versions)</h4>
+
+<pre><code class="language-sql">
+CREATE TABLE package_versions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    pak_guid VARCHAR(64) NOT NULL COMMENT &#39;Pak GUID&#39;,
+    pak_name VARCHAR(128) NOT NULL COMMENT &#39;Pak名称&#39;,
+    version VARCHAR(32) NOT NULL COMMENT &#39;版本号&#39;,
+    change_log TEXT COMMENT &#39;变更日志&#39;,
+    created_by VARCHAR(64) COMMENT &#39;创建人&#39;,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    git_tag VARCHAR(128) COMMENT &#39;Git Tag&#39;,
+    INDEX idx_pak_guid (pak_guid),
+    INDEX idx_version (version),
+    INDEX idx_created_at (created_at)
+) COMMENT=&#39;资产包版本历史&#39;;
+</code></pre>
+
+<h4>7.1.5 部署记录表(package_deployments)</h4>
+
+<pre><code class="language-sql">
+CREATE TABLE package_deployments (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    pak_guid VARCHAR(64) NOT NULL COMMENT &#39;Pak GUID&#39;,
+    pak_name VARCHAR(128) NOT NULL COMMENT &#39;Pak名称&#39;,
+    version VARCHAR(32) NOT NULL COMMENT &#39;版本号&#39;,
+    environment ENUM(&#39;dev&#39;, &#39;test&#39;, &#39;prod&#39;) NOT NULL COMMENT &#39;环境&#39;,
+    platform VARCHAR(32) NOT NULL COMMENT &#39;平台&#39;,
+    cos_path VARCHAR(512) NOT NULL COMMENT &#39;COS路径&#39;,
+    deployed_by VARCHAR(64) COMMENT &#39;部署人&#39;,
+    deployed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM(&#39;pending&#39;, &#39;success&#39;, &#39;failed&#39;) DEFAULT &#39;pending&#39;,
+    INDEX idx_pak_guid (pak_guid),
+    INDEX idx_environment (environment),
+    INDEX idx_platform (platform),
+    INDEX idx_deployed_at (deployed_at)
+) COMMENT=&#39;资产包部署记录&#39;;
+</code></pre>
+
+<h4>7.1.6 MountPoint注册表(mount_points)</h4>
+
+<pre><code class="language-sql">
+CREATE TABLE mount_points (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    mount_point VARCHAR(256) UNIQUE NOT NULL COMMENT &#39;挂载点路径(如/AssetRepo/Scene/)&#39;,
+    category_name VARCHAR(64) UNIQUE NOT NULL COMMENT &#39;分类名称(如Scene/Character)&#39;,
+    display_name VARCHAR(128) NOT NULL COMMENT &#39;显示名称(如场景资产/角色资产)&#39;,
+    description TEXT COMMENT &#39;分类描述&#39;,
+    icon_url VARCHAR(512) COMMENT &#39;分类图标URL&#39;,
+    sort_order INT DEFAULT 0 COMMENT &#39;排序权重&#39;,
+    is_enabled TINYINT(1) DEFAULT 1 COMMENT &#39;是否启用&#39;,
+    created_by VARCHAR(64) COMMENT &#39;创建人&#39;,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_category_name (category_name),
+    INDEX idx_sort_order (sort_order),
+    INDEX idx_is_enabled (is_enabled)
+) COMMENT=&#39;MountPoint一级分类注册表&#39;;
+</code></pre>
+
+<p><strong>预置数据示例</strong>:</p>
+<pre><code class="language-sql">
+INSERT INTO mount_points (mount_point, category_name, display_name, description, sort_order) VALUES
+(&#39;/AssetRepo/Scene/&#39;, &#39;Scene&#39;, &#39;场景资产&#39;, &#39;包含各类场景建筑、地形、植被等静态场景资产&#39;, 1),
+(&#39;/AssetRepo/Character/&#39;, &#39;Character&#39;, &#39;角色资产&#39;, &#39;包含角色模型、动画、材质等角色相关资产&#39;, 2),
+(&#39;/AssetRepo/Effect/&#39;, &#39;Effect&#39;, &#39;特效资产&#39;, &#39;包含粒子特效、Niagara系统、后处理特效等&#39;, 3),
+(&#39;/AssetRepo/Audio/&#39;, &#39;Audio&#39;, &#39;音频资产&#39;, &#39;包含背景音乐、音效、语音等音频资源&#39;, 4),
+(&#39;/AssetRepo/UI/&#39;, &#39;UI&#39;, &#39;UI资产&#39;, &#39;包含UI贴图、字体、图标等界面资源&#39;, 5),
+(&#39;/AssetRepo/Common/&#39;, &#39;Common&#39;, &#39;通用资产&#39;, &#39;包含通用材质、纹理、Shader等基础资源&#39;, 6);
+</code></pre>
+
+<hr>
+
+<h2>8. 管理端功能设计</h2>
+
+<h3>8.1 资产包管理</h3>
+
+<h4>8.1.1 资产包列表</h4>
+
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────────┐
+│  资产包管理                                                  │
+├─────────────────────────────────────────────────────────────┤
+│  [新建资产包]  [批量导入]  [导出清单]                       │
+│                                                              │
+│  筛选: 分类[全部▼] 状态[全部▼] 平台[全部▼] 搜索[____]      │
+│                                                              │
+│  资产包名称        分类      版本    大小    状态    操作    │
+│  ─────────────────────────────────────────────────────────  │
+│  ChinaCastle      Scene    v1.2.3   50MB   已发布  [详情]  │
+│  ModernCity       Scene    v1.0.5   45MB   已发布  [详情]  │
+│  HeroWarrior      Character v2.1.0  30MB   已发布  [详情]  │
+│  NPCVillager      Character v1.5.0  25MB   草稿    [详情]  │
+│  MagicEffects     Effect   v1.0.0   15MB   已发布  [详情]  │
+│                                                              │
+│  [上一页]  1 / 10  [下一页]                                 │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h4>8.1.2 资产包详情</h4>
+
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────────┐
+│  资产包详情 - ChinaCastle                                    │
+├─────────────────────────────────────────────────────────────┤
+│  基本信息:                                                   │
+│  Pak GUID: 550e8400-e29b-41d4-a716-446655440000               │
+│  Pak MD5: a3f5e8d9c2b1f4e6a7d8c9b0e1f2a3b4                 │
+│  名称: ChinaCastle                                          │
+│  分类: Scene                                                │
+│  版本: v1.2.3                                               │
+│  挂载点: /AssetRepo/Scene/                                  │
+│  状态: 已发布                                               │
+│                                                              │
+│  描述:                                                       │
+│  中国风城堡场景资产包，包含城墙、塔楼、大门等建筑元素        │
+│                                                              │
+│  标签: Scene, Castle, Chinese, Architecture                 │
+│                                                              │
+│  平台支持: Win64, Android, iOS                              │
+│                                                              │
+│  统计信息:                                                   │
+│  总大小: 50 MB                                              │
+│  资产数量: 45                                               │
+│  创建人: zhangsan                                           │
+│  创建时间: 2026-01-05 14:00:00                              │
+│  更新时间: 2026-01-10 10:00:00                              │
+│                                                              │
+│  依赖关系:                                                   │
+│  • CommonMaterial (v1.0.0+) - 依赖通用石材和木材材质        │
+│  • CommonTexture (v1.0.0+) - 依赖通用纹理库                 │
+│                                                              │
+│  被引用情况:                                                 │
+│  • MOD_Chase_001 (v1.0.0)                                   │
+│  • MOD_Farm_002 (v2.1.0)                                    │
+│                                                              │
+│  [编辑]  [发布]  [查看依赖图]  [下载]                       │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>8.2 依赖可视化</h3>
+
+<pre><code class="language-mermaid">
+%%{init: {&#39;theme&#39;:&#39;base&#39;, &#39;themeVariables&#39;: { &#39;primaryColor&#39;:&#39;#e1f5fe&#39;,&#39;primaryTextColor&#39;:&#39;#01579b&#39;,&#39;primaryBorderColor&#39;:&#39;#0288d1&#39;,&#39;lineColor&#39;:&#39;#4fc3f7&#39;,&#39;secondaryColor&#39;:&#39;#f3e5f5&#39;,&#39;tertiaryColor&#39;:&#39;#e8f5e9&#39;,&#39;fontSize&#39;:&#39;14px&#39;,&#39;fontFamily&#39;:&#39;Arial&#39;}}}%%
+graph TB
+    subgraph &quot;资产包依赖图&quot;
+        A[ChinaCastle&lt;br/&gt;v1.2.3] --&gt; B[CommonMaterial&lt;br/&gt;v1.0.0]
+        A --&gt; C[CommonTexture&lt;br/&gt;v1.0.0]
+        B --&gt; D[BaseShader&lt;br/&gt;v1.0.0]
+        C --&gt; D
+        
+        E[HeroWarrior&lt;br/&gt;v2.1.0] --&gt; F[CommonAnimation&lt;br/&gt;v1.5.0]
+        E --&gt; B
+        
+        G[MagicEffects&lt;br/&gt;v1.0.0] --&gt; H[CommonParticle&lt;br/&gt;v1.2.0]
+        G --&gt; C
+    end
+    
+    style A fill:#81d4fa,stroke:#0288d1,stroke-width:3px
+    style B fill:#ce93d8,stroke:#8e24aa,stroke-width:2px
+    style C fill:#ce93d8,stroke:#8e24aa,stroke-width:2px
+    style D fill:#a5d6a7,stroke:#43a047,stroke-width:2px
+    style E fill:#81d4fa,stroke:#0288d1,stroke-width:2px
+    style F fill:#ce93d8,stroke:#8e24aa,stroke-width:2px
+    style G fill:#81d4fa,stroke:#0288d1,stroke-width:2px
+    style H fill:#ce93d8,stroke:#8e24aa,stroke-width:2px
+</code></pre>
+
+<h3>8.3 MountPoint分类管理</h3>
+
+<h4>8.3.1 功能概述</h4>
+
+<p>在离散化公共资产仓库系统中，<strong>MountPoint（一级分类）注册管理</strong>是基础设施的核心功能之一。它负责管理公共资产仓库的顶层分类结构，确保所有资产包都挂载到规范、统一的路径下。</p>
+
+<p><strong>核心价值</strong>:</p>
+<ol>
+<li><strong>路径规范化</strong>: 统一管理挂载点路径，避免路径混乱</li>
+<li><strong>分类可扩展</strong>: 支持动态添加新的资产分类，无需修改代码</li>
+<li><strong>权限控制</strong>: 通过管理端集中管理，防止随意创建分类</li>
+<li><strong>数据完整性</strong>: 确保分类与资产包的关联关系正确</li>
+</ol>
+<p><strong>设计原则</strong>:</p>
+<ul>
+<li><strong>统一挂载</strong>: 同一分类下的所有资产包共享同一个MountPoint</li>
+<li><strong>路径不可变</strong>: 一旦创建，MountPoint路径不可修改，保证稳定性</li>
+<li><strong>删除保护</strong>: 有资产包的分类不允许删除，防止数据孤岛</li>
+<li><strong>自动生成</strong>: MountPoint路径自动生成，格式为<code>/AssetRepo/{分类名称}/</code></li>
+</ul>
+<h4>8.3.2 数据库设计</h4>
+
+<p><strong>表结构</strong>:</p>
+<pre><code class="language-sql">
+CREATE TABLE mount_points (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    mount_point VARCHAR(256) UNIQUE NOT NULL COMMENT &#39;挂载点路径(如/AssetRepo/Scene/)&#39;,
+    category_name VARCHAR(64) UNIQUE NOT NULL COMMENT &#39;分类名称(如Scene/Character)&#39;,
+    display_name VARCHAR(128) NOT NULL COMMENT &#39;显示名称(如场景资产/角色资产)&#39;,
+    description TEXT COMMENT &#39;分类描述&#39;,
+    icon_url VARCHAR(512) COMMENT &#39;分类图标URL&#39;,
+    sort_order INT DEFAULT 0 COMMENT &#39;排序权重&#39;,
+    is_enabled TINYINT(1) DEFAULT 1 COMMENT &#39;是否启用&#39;,
+    created_by VARCHAR(64) COMMENT &#39;创建人&#39;,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_category_name (category_name),
+    INDEX idx_sort_order (sort_order),
+    INDEX idx_is_enabled (is_enabled)
+) COMMENT=&#39;MountPoint一级分类注册表&#39;;
+</code></pre>
+
+<p><strong>预置数据</strong>:</p>
+
+<table>
+<thead><tr>
+<th>分类名称</th>
+<th>挂载点路径</th>
+<th>显示名称</th>
+<th>排序</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Scene</td>
+<td>/AssetRepo/Scene/</td>
+<td>场景资产</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Character</td>
+<td>/AssetRepo/Character/</td>
+<td>角色资产</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Effect</td>
+<td>/AssetRepo/Effect/</td>
+<td>特效资产</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>/AssetRepo/Audio/</td>
+<td>音频资产</td>
+<td>4</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>/AssetRepo/UI/</td>
+<td>UI资产</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Common</td>
+<td>/AssetRepo/Common/</td>
+<td>通用资产</td>
+<td>6</td>
+</tr>
+</tbody></table>
+
+<h4>8.3.3 关键验证逻辑</h4>
+
+<p><strong>创建时验证</strong>:</p>
+<ol>
+<li><code>category_name</code> 必须唯一，仅支持字母、数字、下划线</li>
+<li><code>mount<em>point</code> 自动生成为 <code>/AssetRepo/{category</em>name}/</code></li>
+<li>检查生成的 <code>mount_point</code> 是否已存在</li>
+</ol>
+<p><strong>更新时限制</strong>:</p>
+<ol>
+<li><code>category<em>name</code> 和 <code>mount</em>point</code> 不允许修改</li>
+<li>只能修改 <code>display<em>name</code>、<code>description</code>、<code>icon</em>url</code>、<code>sort<em>order</code>、<code>is</em>enabled</code></li>
+</ol>
+<p><strong>删除时检查</strong>:</p>
+<ol>
+<li>查询该分类下是否有资产包（关联 <code>asset_packages</code> 表）</li>
+<li>如果有资产包，返回错误，要求先迁移或删除资产包</li>
+<li>只有空分类才允许删除</li>
+</ol>
+<h4>8.3.4 管理端界面</h4>
+
+<p><strong>MountPoint列表页</strong>:</p>
+
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────────┐
+│  MountPoint分类管理                                          │
+├─────────────────────────────────────────────────────────────┤
+│  [新建分类]  [批量导入]  [排序]                             │
+│                                                              │
+│  分类名称      挂载点路径              资产包数  状态  操作  │
+│  ─────────────────────────────────────────────────────────  │
+│  场景资产      /AssetRepo/Scene/         45     启用  [编辑]│
+│  角色资产      /AssetRepo/Character/     32     启用  [编辑]│
+│  特效资产      /AssetRepo/Effect/        18     启用  [编辑]│
+│  音频资产      /AssetRepo/Audio/         25     启用  [编辑]│
+│  UI资产        /AssetRepo/UI/            12     启用  [编辑]│
+│  通用资产      /AssetRepo/Common/        8      启用  [编辑]│
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<p><strong>新建/编辑MountPoint页</strong>:</p>
+
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────────┐
+│  新建MountPoint分类                                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  分类名称(英文):  [Weapon____________]  *必填               │
+│                   (用于目录命名,仅支持字母数字下划线)        │
+│                                                              │
+│  显示名称(中文):  [武器资产___________]  *必填               │
+│                   (用于界面显示)                             │
+│                                                              │
+│  挂载点路径:      [/AssetRepo/Weapon/]  *自动生成           │
+│                   (格式: /AssetRepo/{分类名称}/)             │
+│                                                              │
+│  分类描述:                                                   │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │包含各类武器模型、特效、音效等资产                    │  │
+│  │                                                      │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                              │
+│  分类图标:        [选择图标]  或  [上传图标]                │
+│                                                              │
+│  排序权重:        [7_____]  (数字越小越靠前)                │
+│                                                              │
+│  状态:            ○ 启用  ○ 禁用                            │
+│                                                              │
+│  ─────────────────────────────────────────────────────────  │
+│                                                              │
+│  [取消]                                          [保存]      │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<p><strong>表单验证规则</strong>:</p>
+<ul>
+<li>分类名称：2-64字符，正则 <code>^[a-zA-Z0-9_]+$</code></li>
+<li>显示名称：2-128字符</li>
+<li>挂载点路径：自动生成，格式 <code>/AssetRepo/{分类名称}/</code></li>
+</ul>
+<p><strong>MountPoint详情页</strong>:</p>
+
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────────┐
+│  MountPoint详情 - 场景资产                                   │
+├─────────────────────────────────────────────────────────────┤
+│  基本信息:                                                   │
+│  分类名称: Scene                                            │
+│  显示名称: 场景资产                                         │
+│  挂载点路径: /AssetRepo/Scene/                              │
+│  描述: 包含各类场景建筑、地形、植被等静态场景资产            │
+│  排序权重: 1                                                │
+│  状态: 启用                                                 │
+│  创建人: admin                                              │
+│  创建时间: 2026-01-01 10:00:00                              │
+│  更新时间: 2026-01-10 15:30:00                              │
+│                                                              │
+│  统计信息:                                                   │
+│  资产包数量: 45                                             │
+│  总资产数: 1,234                                            │
+│  总大小: 2.5 GB                                             │
+│                                                              │
+│  资产包列表:                                                 │
+│  • ChinaCastle (v1.2.3) - 50MB                              │
+│  • ModernCity (v1.0.5) - 45MB                               │
+│  • ForestScene (v2.0.0) - 80MB                              │
+│  • DesertScene (v1.5.0) - 65MB                              │
+│  ... 查看全部                                               │
+│                                                              │
+│  [编辑]  [查看资产包]  [导出清单]                           │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h4>8.3.5 与资产包管理的集成</h4>
+
+<p><strong>创建资产包时的验证</strong>:</p>
+
+<pre><code class="language-javascript">
+// 伪代码
+function createAssetPackage(packageData) {
+  // 1. 验证category是否存在
+  const mountPoint = await getMountPointByCategory(packageData.category);
+  if (!mountPoint) {
+    throw new Error(`分类&#39;${packageData.category}&#39;不存在，请先注册MountPoint`);
+  }
+  
+  // 2. 验证MountPoint是否启用
+  if (!mountPoint.is_enabled) {
+    throw new Error(`分类&#39;${packageData.category}&#39;已禁用`);
+  }
+  
+  // 3. 自动填充mount_point字段
+  packageData.mount_point = mountPoint.mount_point;
+  
+  // 4. 继续创建资产包
+  return await saveAssetPackage(packageData);
+}
+</code></pre>
+
+<p><strong>资产包列表的分类筛选</strong>:</p>
+
+<pre><code class="language-javascript">
+// 获取可用分类列表
+GET /api/v1/mountpoints/available
+
+// 响应
+{
+  &quot;data&quot;: [
+    {&quot;category_name&quot;: &quot;Scene&quot;, &quot;display_name&quot;: &quot;场景资产&quot;},
+    {&quot;category_name&quot;: &quot;Character&quot;, &quot;display_name&quot;: &quot;角色资产&quot;},
+    ...
+  ]
+}
+</code></pre>
+
+<h4>8.3.6 客户端使用场景</h4>
+
+<p><strong>MOD编辑器集成</strong>:</p>
+
+<pre><code class="language-cpp">
+// 1. 获取可用分类列表
+TArray&lt;FMountPointInfo&gt; Categories = AssetRepoClient-&gt;GetAvailableCategories();
+
+// 在UI中展示为下拉框
+for (const FMountPointInfo&amp; Category : Categories) {
+    ComboBox-&gt;AddOption(Category.DisplayName, Category.CategoryName);
+}
+
+// 2. 验证分类有效性
+bool IsValidCategory(const FString&amp; CategoryName) {
+    return AssetRepoClient-&gt;IsCategoryEnabled(CategoryName);
+}
+</code></pre>
+
+<p><strong>资产包下载与挂载</strong>:</p>
+
+<pre><code class="language-cpp">
+// 下载资产包
+FString PakPath = DownloadPak(PakGUID);
+
+// 根据category获取MountPoint
+FString MountPoint = GetMountPointByCategory(Package.Category);
+
+// 挂载Pak到指定MountPoint
+FPakPlatformFile::Get().Mount(*PakPath, 0, *MountPoint);
+</code></pre>
+
+<h4>8.3.7 注意事项</h4>
+
+<p><strong>路径不可变原则</strong>:</p>
+
+<p>为什么不允许修改MountPoint路径？</p>
+<ol>
+<li><strong>资产包依赖</strong>: 已发布的资产包的 <code>mount_point</code> 字段已固化</li>
+<li><strong>客户端缓存</strong>: 客户端可能缓存了MountPoint信息</li>
+<li><strong>COS存储结构</strong>: COS上的目录结构已按MountPoint组织</li>
+</ol>
+<p>如果确实需要修改：</p>
+<ol>
+<li>创建新的MountPoint</li>
+<li>逐步迁移资产包到新分类</li>
+<li>待所有资产包迁移完成后，删除旧分类</li>
+</ol>
+<p><strong>删除保护机制</strong>:</p>
+
+<p>为什么不允许删除有资产包的分类？</p>
+<ol>
+<li><strong>数据完整性</strong>: 避免资产包变成孤岛数据</li>
+<li><strong>引用完整性</strong>: 其他资产包可能依赖该分类下的资产包</li>
+<li><strong>COS清理</strong>: 需要先清理COS上的文件</li>
+</ol>
+<p>正确的删除流程：</p>
+<ol>
+<li>检查该分类下的所有资产包</li>
+<li>将资产包迁移到其他分类或删除</li>
+<li>确认该分类下无资产包后，才允许删除</li>
+</ol>
+<p><strong>扩展性考虑</strong>:</p>
+
+<p>未来可能的扩展：</p>
+<ol>
+<li><strong>多级分类</strong>: 支持二级、三级分类（如 <code>/AssetRepo/Scene/Indoor/</code>）</li>
+<li><strong>权限控制</strong>: 不同用户对不同分类的访问权限</li>
+<li><strong>配额管理</strong>: 限制每个分类下的资产包数量或总大小</li>
+<li><strong>标签系统</strong>: 为分类添加标签，支持多维度筛选</li>
+</ol>
+<h3>8.4 发布管理</h3>
+
+<pre><code class="language-">
+┌─────────────────────────────────────────────────────────────┐
+│  发布管理                                                    │
+├─────────────────────────────────────────────────────────────┤
+│  选择资产包:                                                 │
+│  ☑ ChinaCastle (v1.2.3)                                     │
+│  ☑ HeroWarrior (v2.1.0)                                     │
+│  ☐ MagicEffects (v1.0.0)                                    │
+│                                                              │
+│  目标环境: ● 开发环境  ○ 先遣测试  ○ 线上环境               │
+│                                                              │
+│  目标平台:                                                   │
+│  ☑ Win64  ☑ Android  ☑ iOS                                  │
+│                                                              │
+│  发布选项:                                                   │
+│  ☑ 自动创建Tag                                               │
+│  ☑ 验证依赖完整性                                            │
+│  ☑ 同时发布.pakmeta文件                                      │
+│  ☐ 强制覆盖已存在版本                                        │
+│                                                              │
+│  依赖检查结果:                                               │
+│  ✓ ChinaCastle 依赖完整                                     │
+│  ✓ HeroWarrior 依赖完整                                     │
+│  ✓ 无循环依赖                                               │
+│                                                              │
+│  [取消]  [开始发布]                                          │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<hr>
+
+<h2>9. 资源管理服务器API接口设计</h2>
+
+<h3>9.1 MountPoint管理API</h3>
+
+<h4>9.1.1 获取MountPoint列表</h4>
+
+<p><strong>接口</strong>: <code>GET /api/v1/mountpoints</code></p>
+
+<p><strong>请求参数</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;is_enabled&quot;: 1,           // 可选,筛选启用状态(0/1)
+  &quot;page&quot;: 1,                 // 页码
+  &quot;page_size&quot;: 20            // 每页数量
+}
+</code></pre>
+
+<p><strong>响应示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;total&quot;: 6,
+    &quot;items&quot;: [
+      {
+        &quot;id&quot;: 1,
+        &quot;mount_point&quot;: &quot;/AssetRepo/Scene/&quot;,
+        &quot;category_name&quot;: &quot;Scene&quot;,
+        &quot;display_name&quot;: &quot;场景资产&quot;,
+        &quot;description&quot;: &quot;包含各类场景建筑、地形、植被等静态场景资产&quot;,
+        &quot;icon_url&quot;: &quot;https://cdn.example.com/icons/scene.png&quot;,
+        &quot;sort_order&quot;: 1,
+        &quot;is_enabled&quot;: 1,
+        &quot;package_count&quot;: 45,
+        &quot;total_size&quot;: 2621440000,
+        &quot;created_at&quot;: &quot;2026-01-01 10:00:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-01-10 15:30:00&quot;
+      },
+      {
+        &quot;id&quot;: 2,
+        &quot;mount_point&quot;: &quot;/AssetRepo/Character/&quot;,
+        &quot;category_name&quot;: &quot;Character&quot;,
+        &quot;display_name&quot;: &quot;角色资产&quot;,
+        &quot;description&quot;: &quot;包含角色模型、动画、材质等角色相关资产&quot;,
+        &quot;sort_order&quot;: 2,
+        &quot;is_enabled&quot;: 1,
+        &quot;package_count&quot;: 32,
+        &quot;total_size&quot;: 1572864000,
+        &quot;created_at&quot;: &quot;2026-01-01 10:00:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-01-10 15:30:00&quot;
+      }
+    ]
+  }
+}
+</code></pre>
+
+<h4>9.1.2 创建MountPoint</h4>
+
+<p><strong>接口</strong>: <code>POST /api/v1/mountpoints</code></p>
+
+<p><strong>请求体</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;category_name&quot;: &quot;Weapon&quot;,
+  &quot;display_name&quot;: &quot;武器资产&quot;,
+  &quot;description&quot;: &quot;包含各类武器模型、特效、音效等资产&quot;,
+  &quot;icon_url&quot;: &quot;https://cdn.example.com/icons/weapon.png&quot;,
+  &quot;sort_order&quot;: 7,
+  &quot;is_enabled&quot;: 1
+}
+</code></pre>
+
+<p><strong>验证规则</strong>:</p>
+<ul>
+<li><code>category_name</code>: 必填,2-64字符,仅支持字母、数字、下划线,全局唯一</li>
+<li><code>display_name</code>: 必填,2-128字符</li>
+<li><code>mount<em>point</code>: 自动生成为<code>/AssetRepo/{category</em>name}/</code>,全局唯一</li>
+</ul>
+<p><strong>响应示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;MountPoint创建成功&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: 7,
+    &quot;mount_point&quot;: &quot;/AssetRepo/Weapon/&quot;,
+    &quot;category_name&quot;: &quot;Weapon&quot;,
+    &quot;display_name&quot;: &quot;武器资产&quot;,
+    &quot;created_at&quot;: &quot;2026-01-10 16:00:00&quot;
+  }
+}
+</code></pre>
+
+<p><strong>错误响应</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 40001,
+  &quot;message&quot;: &quot;分类名称已存在&quot;,
+  &quot;data&quot;: null
+}
+</code></pre>
+
+<h4>9.1.3 更新MountPoint</h4>
+
+<p><strong>接口</strong>: <code>PUT /api/v1/mountpoints/{id}</code></p>
+
+<p><strong>请求体</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;display_name&quot;: &quot;武器装备资产&quot;,
+  &quot;description&quot;: &quot;包含各类武器、装备模型、特效、音效等资产&quot;,
+  &quot;icon_url&quot;: &quot;https://cdn.example.com/icons/weapon_v2.png&quot;,
+  &quot;sort_order&quot;: 8,
+  &quot;is_enabled&quot;: 1
+}
+</code></pre>
+
+<p><strong>限制</strong>:</p>
+<ul>
+<li><code>category<em>name</code> 和 <code>mount</em>point</code> 不允许修改(保证路径稳定性)</li>
+<li>如需修改,需创建新分类并迁移资产包</li>
+</ul>
+<p><strong>响应示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;MountPoint更新成功&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: 7,
+    &quot;updated_at&quot;: &quot;2026-01-10 16:30:00&quot;
+  }
+}
+</code></pre>
+
+<h4>9.1.4 删除MountPoint</h4>
+
+<p><strong>接口</strong>: <code>DELETE /api/v1/mountpoints/{id}</code></p>
+
+<p><strong>前置检查</strong>:</p>
+<ol>
+<li>检查该分类下是否有资产包</li>
+<li>如果有资产包,返回错误,要求先迁移或删除资产包</li>
+</ol>
+<p><strong>响应示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;MountPoint删除成功&quot;
+}
+</code></pre>
+
+<p><strong>错误响应</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 40002,
+  &quot;message&quot;: &quot;该分类下存在45个资产包,无法删除&quot;,
+  &quot;data&quot;: {
+    &quot;package_count&quot;: 45,
+    &quot;packages&quot;: [&quot;ChinaCastle&quot;, &quot;ModernCity&quot;, &quot;...&quot;]
+  }
+}
+</code></pre>
+
+<h4>9.1.5 获取MountPoint详情</h4>
+
+<p><strong>接口</strong>: <code>GET /api/v1/mountpoints/{id}</code></p>
+
+<p><strong>响应示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: 1,
+    &quot;mount_point&quot;: &quot;/AssetRepo/Scene/&quot;,
+    &quot;category_name&quot;: &quot;Scene&quot;,
+    &quot;display_name&quot;: &quot;场景资产&quot;,
+    &quot;description&quot;: &quot;包含各类场景建筑、地形、植被等静态场景资产&quot;,
+    &quot;icon_url&quot;: &quot;https://cdn.example.com/icons/scene.png&quot;,
+    &quot;sort_order&quot;: 1,
+    &quot;is_enabled&quot;: 1,
+    &quot;created_by&quot;: &quot;admin&quot;,
+    &quot;created_at&quot;: &quot;2026-01-01 10:00:00&quot;,
+    &quot;updated_at&quot;: &quot;2026-01-10 15:30:00&quot;,
+    &quot;statistics&quot;: {
+      &quot;package_count&quot;: 45,
+      &quot;asset_count&quot;: 1234,
+      &quot;total_size&quot;: 2621440000
+    },
+    &quot;packages&quot;: [
+      {
+        &quot;pak_guid&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,
+        &quot;pak_name&quot;: &quot;ChinaCastle&quot;,
+        &quot;version&quot;: &quot;v1.2.3&quot;,
+        &quot;total_size&quot;: 52428800,
+        &quot;status&quot;: &quot;published&quot;
+      }
+    ]
+  }
+}
+</code></pre>
+
+<h3>9.2 资产包管理API</h3>
+
+<h4>9.2.1 创建资产包时的MountPoint验证</h4>
+
+<p><strong>接口</strong>: <code>POST /api/v1/packages</code></p>
+
+<p><strong>请求体</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;pak_name&quot;: &quot;ChinaCastle&quot;,
+  &quot;category&quot;: &quot;Scene&quot;,        // 必须是已注册的category_name
+  &quot;version&quot;: &quot;v1.0.0&quot;,
+  &quot;description&quot;: &quot;中国风城堡场景资产包&quot;,
+  ...
+}
+</code></pre>
+
+<p><strong>验证逻辑</strong>:</p>
+<ol>
+<li>检查<code>category</code>是否在<code>mount_points</code>表中存在</li>
+<li>检查对应的MountPoint是否启用(<code>is_enabled=1</code>)</li>
+<li>自动填充<code>mount_point</code>字段为对应的挂载点路径</li>
+</ol>
+<p><strong>错误响应</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 40003,
+  &quot;message&quot;: &quot;分类&#39;Weapon&#39;不存在或未启用,请先注册MountPoint&quot;,
+  &quot;data&quot;: {
+    &quot;available_categories&quot;: [&quot;Scene&quot;, &quot;Character&quot;, &quot;Effect&quot;, &quot;Audio&quot;, &quot;UI&quot;, &quot;Common&quot;]
+  }
+}
+</code></pre>
+
+<h3>9.3 客户端查询API</h3>
+
+<h4>9.3.1 获取可用分类列表(供MOD编辑器使用)</h4>
+
+<p><strong>接口</strong>: <code>GET /api/v1/mountpoints/available</code></p>
+
+<p><strong>响应示例</strong>:</p>
+<pre><code class="language-json">
+{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: [
+    {
+      &quot;category_name&quot;: &quot;Scene&quot;,
+      &quot;display_name&quot;: &quot;场景资产&quot;,
+      &quot;mount_point&quot;: &quot;/AssetRepo/Scene/&quot;,
+      &quot;icon_url&quot;: &quot;https://cdn.example.com/icons/scene.png&quot;,
+      &quot;package_count&quot;: 45
+    },
+    {
+      &quot;category_name&quot;: &quot;Character&quot;,
+      &quot;display_name&quot;: &quot;角色资产&quot;,
+      &quot;mount_point&quot;: &quot;/AssetRepo/Character/&quot;,
+      &quot;icon_url&quot;: &quot;https://cdn.example.com/icons/character.png&quot;,
+      &quot;package_count&quot;: 32
+    }
+  ]
+}
+</code></pre>
+
+<p><strong>用途</strong>: MOD编辑器在创建资产包时,展示可选的分类下拉列表</p>
+
+<hr>
+
+<h2>10. 关键技术问题与解决方案</h2>
+
+<h3>10.1 Pak数量与性能权衡</h3>
+
+<p><strong>问题</strong>: 小Pak策略会导致Pak数量增加,可能影响文件系统和引擎性能</p>
+
+<p><strong>解决方案</strong>:</p>
+<ol>
+<li><strong>合理的Pak粒度控制</strong>:</li>
+<li>单个资产包Pak大小建议: 10MB - 100MB</li>
+<li>避免过度拆分(如单个资产一个Pak)</li>
+<li>按使用场景和更新频率分组</li>
+</ul>
+<ol>
+<li><strong>Pak索引优化</strong>:</li>
+<li>实现高效的Pak查找索引(哈希表)</li>
+<li>缓存常用Pak的元数据</li>
+<li>延迟加载非关键Pak</li>
+</ul>
+<ol>
+<li><strong>分批挂载策略</strong>:</li>
+<li>按需挂载,而非一次性挂载所有Pak</li>
+<li>实现Pak的动态卸载机制</li>
+<li>优先加载高频使用的Pak</li>
+</ul>
+<h3>10.2 Shader管理</h3>
+
+<p><strong>问题</strong>: 公共资产包中的材质需要合理的Shader编译和分发策略</p>
+
+<p><strong>当前方案</strong>: </p>
+<ul>
+<li>短期采用Inline Shaders模式(Shader随材质资产一起Cook)</li>
+<li>优点: 部署简单,无需额外管理</li>
+<li>缺点: 会增大Pak体积</li>
+</ul>
+<p><strong>长期演进</strong>:</p>
+<ul>
+<li>评估Native Shader Library方案</li>
+<li>按资产包分组管理Shader库</li>
+<li>支持Shader库的增量更新</li>
+</ul>
+<h3>10.3 版本兼容性</h3>
+
+<p><strong>语义化版本规则</strong>:</p>
+<pre><code class="language-">
+格式: v主版本.次版本.修订号
+示例: v1.2.3
+
+规则:
+- 主版本(Major): 不兼容的重大变更(如修改资产结构、删除接口)
+- 次版本(Minor): 向后兼容的新增功能(如新增材质参数)
+- 修订号(Patch): 向后兼容的Bug修复(如修复Shader错误)
+</code></pre>
+
+<p><strong>版本约束检查</strong>:</p>
+<pre><code class="language-cpp">
+// MOD声明版本范围
+{
+  &quot;pakName&quot;: &quot;ChinaCastle&quot;,
+  &quot;versionConstraint&quot;: &quot;&gt;=v1.2.0 &lt;v2.0.0&quot;,  // 版本范围约束
+  &quot;requiredVersion&quot;: &quot;v1.2.3&quot;               // 当前使用版本
+}
+
+// 检查逻辑
+- 主版本必须一致(Major相同)
+- 次版本和修订号在约束范围内
+- 超出范围触发警告或错误
+</code></pre>
+
+<hr>
+
+<h2>11. 实施路线图</h2>
+
+<h3>11.1 阶段划分</h3>
+
+<pre><code class="language-mermaid">
+%%{init: {&#39;theme&#39;:&#39;base&#39;, &#39;themeVariables&#39;: { &#39;primaryColor&#39;:&#39;#f3e5f5&#39;,&#39;primaryTextColor&#39;:&#39;#4a148c&#39;,&#39;primaryBorderColor&#39;:&#39;#7b1fa2&#39;,&#39;lineColor&#39;:&#39;#ab47bc&#39;,&#39;secondaryColor&#39;:&#39;#e8f5e9&#39;,&#39;tertiaryColor&#39;:&#39;#e1f5fe&#39;,&#39;fontSize&#39;:&#39;13px&#39;,&#39;fontFamily&#39;:&#39;Arial&#39;}}}%%
+gantt
+    title 离散化公共资产仓库实施路线图
+    dateFormat  YYYY-MM-DD
+    section 阶段1:基础设施
+    资产包模型设计           :done, a1, 2026-01-01, 7d
+    数据库设计与实现         :done, a2, 2026-01-08, 7d
+    GIT仓库搭建             :active, a3, 2026-01-15, 5d
+    
+    section 阶段2:核心功能
+    依赖分析工具开发         :a4, 2026-01-20, 14d
+    .pakmeta文件生成        :a5, 2026-01-27, 10d
+    资源管理服务器API       :a6, 2026-02-03, 14d
+    
+    section 阶段3:管理端
+    资产包管理界面           :a7, 2026-02-10, 14d
+    依赖可视化              :a8, 2026-02-17, 10d
+    发布管理功能            :a9, 2026-02-24, 14d
+    
+    section 阶段4:客户端
+    Pak加载器实现           :a10, 2026-03-03, 14d
+    依赖闭包计算            :a11, 2026-03-10, 10d
+    版本兼容性检查          :a12, 2026-03-17, 7d
+    
+    section 阶段5:测试与上线
+    首批资产迁移            :a13, 2026-03-24, 14d
+    内部测试验证            :a14, 2026-04-07, 14d
+    正式上线                :milestone, a15, 2026-04-21, 1d
+</code></pre>
+
+<h3>11.2 里程碑</h3>
+
+<table>
+<thead><tr>
+<th>里程碑</th>
+<th>时间</th>
+<th>交付物</th>
+<th>验收标准</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>M1: 基础设施完成</td>
+<td>2026-01-20</td>
+<td>数据库、GIT仓库</td>
+<td>可以存储和查询资产包元数据</td>
+</tr>
+<tr>
+<td>M2: 核心功能完成</td>
+<td>2026-02-17</td>
+<td>依赖分析工具、API</td>
+<td>可以分析依赖并生成.pakmeta文件</td>
+</tr>
+<tr>
+<td>M3: 管理端完成</td>
+<td>2026-03-10</td>
+<td>管理端界面</td>
+<td>可以通过管理端管理资产包</td>
+</tr>
+<tr>
+<td>M4: 客户端完成</td>
+<td>2026-03-24</td>
+<td>Pak加载器</td>
+<td>客户端可以正确加载资产包</td>
+</tr>
+<tr>
+<td>M5: 正式上线</td>
+<td>2026-04-21</td>
+<td>完整系统</td>
+<td>首批资产包成功迁移并上线</td>
+</tr>
+</tbody></table>
+
+<hr>
+
+<h2>12. 风险与应对</h2>
+
+<h3>12.1 技术风险</h3>
+
+<table>
+<thead><tr>
+<th>风险</th>
+<th>影响</th>
+<th>概率</th>
+<th>应对措施</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Pak数量过多影响性能</td>
+<td>高</td>
+<td>中</td>
+<td>实施Pak索引优化,分批挂载策略</td>
+</tr>
+<tr>
+<td>依赖关系复杂导致循环依赖</td>
+<td>中</td>
+<td>中</td>
+<td>实现循环依赖检测,强制审核</td>
+</tr>
+<tr>
+<td>Shader管理复杂度高</td>
+<td>中</td>
+<td>低</td>
+<td>短期采用Inline模式,长期评估Shader库</td>
+</tr>
+<tr>
+<td>版本兼容性问题</td>
+<td>高</td>
+<td>中</td>
+<td>严格的语义化版本规则,自动化检查</td>
+</tr>
+</tbody></table>
+
+<h3>12.2 流程风险</h3>
+
+<table>
+<thead><tr>
+<th>风险</th>
+<th>影响</th>
+<th>概率</th>
+<th>应对措施</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>资产迁移工作量大</td>
+<td>高</td>
+<td>高</td>
+<td>分批迁移,优先高频资产</td>
+</tr>
+<tr>
+<td>团队学习成本高</td>
+<td>中</td>
+<td>中</td>
+<td>提供详细文档和培训</td>
+</tr>
+<tr>
+<td>工具链不完善</td>
+<td>中</td>
+<td>中</td>
+<td>优先开发核心工具,逐步完善</td>
+</tr>
+</tbody></table>
+
+<hr>
+
+<h2>13. 总结</h2>
+
+<h3>13.1 核心价值</h3>
+
+<ol>
+<li><strong>真正的资源共享</strong>: 公共资产只维护一份,所有MOD复用</li>
+<li><strong>细粒度管理</strong>: 以资产包为单位,精确控制版本和依赖</li>
+<li><strong>按需下载</strong>: 显著降低包体和下载成本</li>
+<li><strong>统一治理</strong>: 通过管理端实现全生命周期管理</li>
+</ol>
+<h3>13.2 关键创新</h3>
+
+<ol>
+<li><strong>资产包优先</strong>：按资产包(如HeroWarrior、NPCVillager)而非资源类型组织,每个资产包是独立Pak</li>
+<li><strong>统一MountPoint</strong>：按分类统一挂载点(/AssetRepo/Scene、/AssetRepo/Character),简化路径管理</li>
+<li><strong>MD5命名方案</strong>：Pak文件使用<code>{PakName}_{MD5}.pak</code>命名,依赖信息使用PakName+MD5标识</li>
+<li><strong>pakmeta打包方案</strong>：.pakmeta文件在构建时与其他资源文件一起打包进Pak,作为Pak的普通文件存在</li>
+<li><strong>依赖闭包</strong>：自动计算和验证依赖关系,支持循环依赖检测</li>
+<li><strong>MountPoint注册管理</strong>：通过资源管理服务器统一管理一级分类,确保路径规范和唯一性</li>
+<li><strong>双线提交模式</strong>：每次资产修改产生2个commit,分别提交到版本线分支和develop分支,确保修改同步</li>
+<li><strong>Tag版本管理</strong>：使用者只能引用不可变的Tag版本,而非分支,确保版本稳定性</li>
+<li><strong>Git权限集中管理</strong>：所有Git操作必须通过管理端执行,普通用户无直接Git权限</li>
+<li><strong>灰度发布机制</strong>：支持选择性MOD灰度验证,降低发布风险</li>
+<li><strong>智能版本兼容性检查</strong>：APP大版本强制升级,运营期间智能提醒依赖变更的MOD</li>
+<li><strong>COS按Tag组织</strong>：存储结构按Tag版本组织,便于版本管理和回滚</li>
+<h3>13.3 下一步行动</h3>
+</ol>
+<ol>
+<li><strong>完成数据库设计和GIT仓库搭建</strong>（本周）</li>
+<li>实现所有核心表结构</li>
+<li>配置Git仓库权限</li>
+<li>搭建管理端Git操作服务</li>
+</ul>
+<ol>
+<li><strong>开发核心工具</strong>（2周）</li>
+<li>依赖分析工具和.pakmeta生成器</li>
+<li>pakmeta打包工具（集成到Cook流程）</li>
+<li>双线提交功能实现</li>
+</ul>
+<ol>
+<li><strong>实现资源管理服务器核心API</strong>（2周）</li>
+<li>MountPoint管理API</li>
+<li>版本管理API</li>
+<li>发布流程API</li>
+<li>灰度发布控制API</li>
+</ul>
+<ol>
+<li><strong>开发管理端界面原型</strong>（2周）</li>
+<li>版本管理页面</li>
+<li>发布申请和审批页面</li>
+<li>MOD发布配置页面</li>
+<li>灰度发布管理页面</li>
+</ul>
+<ol>
+<li><strong>选择首批资产包进行试点迁移</strong>（1周）</li>
+<li>选择1-2个资产包</li>
+<li>验证完整流程</li>
+<li>收集反馈优化</li>
+</ul>
+<ol>
+<li><strong>完善监控和告警系统</strong>（1周）</li>
+<li>Cook成功率监控</li>
+<li>COS上传监控</li>
+<li>MOD兼容性监控</li>
+</ul>
+<hr>
+
+<p><strong>文档结束</strong></p>
+        </div>
+    </div>
+</body>
+</html>
